@@ -1,0 +1,143 @@
+// Prisma schema — persistence layer (infrastructure concern).
+// Domain entities live in src/modules/<context>/domain and are mapped to/from
+// these Prisma models via mappers in src/modules/<context>/infrastructure/mappers.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────── enums ───────────────
+
+enum UserRole {
+  DOCTOR
+  EMPLOYER
+  ADMIN
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  LOCUM
+  INTERNSHIP
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  REVIEWING
+  INTERVIEW
+  OFFER
+  REJECTED
+  WITHDRAWN
+}
+
+// ─────────────── users context ───────────────
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  doctorProfile   DoctorProfile?
+  employerProfile EmployerProfile?
+  jobsPosted      Job[]            @relation("EmployerJobs")
+  applications    JobApplication[]
+
+  @@map("users")
+}
+
+model DoctorProfile {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @map("user_id") @db.Uuid
+  specialization String
+  yearsOfExp     Int      @default(0) @map("years_of_exp")
+  bio            String?
+  licenseNumber  String?  @map("license_number")
+  city           String?
+  country        String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("doctor_profiles")
+}
+
+model EmployerProfile {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @unique @map("user_id") @db.Uuid
+  companyName String   @map("company_name")
+  website     String?
+  description String?
+  city        String?
+  country     String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("employer_profiles")
+}
+
+// ─────────────── jobs context ───────────────
+
+model Job {
+  id             String         @id @default(uuid()) @db.Uuid
+  employerId     String         @map("employer_id") @db.Uuid
+  title          String
+  description    String
+  specialization String
+  employmentType EmploymentType @map("employment_type")
+  salaryMin      Int?           @map("salary_min")
+  salaryMax      Int?           @map("salary_max")
+  currency       String         @default("USD")
+  city           String?
+  country        String?
+  status         JobStatus      @default(DRAFT)
+  publishedAt    DateTime?      @map("published_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  employer     User             @relation("EmployerJobs", fields: [employerId], references: [id], onDelete: Cascade)
+  applications JobApplication[]
+
+  @@index([status, publishedAt])
+  @@index([specialization])
+  @@map("jobs")
+}
+
+// ─────────────── applications context ───────────────
+
+model JobApplication {
+  id         String            @id @default(uuid()) @db.Uuid
+  jobId      String            @map("job_id") @db.Uuid
+  doctorId   String            @map("doctor_id") @db.Uuid
+  coverLetter String?          @map("cover_letter")
+  status     ApplicationStatus @default(SUBMITTED)
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
+
+  job    Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  doctor User @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, doctorId])
+  @@index([status])
+  @@map("job_applications")
+}

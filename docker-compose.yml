@@ -1,0 +1,101 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: medboard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-medboard}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medboard}
+      POSTGRES_DB: ${POSTGRES_DB:-medboard}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-medboard} -d ${POSTGRES_DB:-medboard}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - medboard
+
+  redis:
+    image: redis:7-alpine
+    container_name: medboard-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - medboard
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: medboard-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@medboard.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - medboard
+    profiles: ["tools"]
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: medboard-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      API_PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-medboard}:${POSTGRES_PASSWORD:-medboard}@postgres:5432/${POSTGRES_DB:-medboard}?schema=public
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "${API_PORT:-3001}:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - medboard
+    profiles: ["full"]
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: medboard-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      - api
+    networks:
+      - medboard
+    profiles: ["full"]
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  medboard:
+    driver: bridge
