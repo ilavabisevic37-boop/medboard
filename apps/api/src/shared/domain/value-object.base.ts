@@ -1,7 +1,7 @@
 /**
  * Base class for all Value Objects. Structural equality, immutable.
  */
-export abstract class ValueObject<TProps extends Record<string, unknown>> {
+export abstract class ValueObject<TProps extends object> {
   protected readonly props: TProps;
 
   protected constructor(props: TProps) {

@@ -13,6 +13,13 @@ out-tsc
 !.vscode/settings.json
 .DS_Store
 
+# Claude Code local state
+.claude
+
+# Generated / build artifacts
+next-env.d.ts
+*.tsbuildinfo
+
 # Env
 .env
 .env.local

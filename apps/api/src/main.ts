@@ -12,6 +12,11 @@ async function bootstrap() {
     new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
   );
 
+  // Close the HTTP server (and run module destroy hooks for Prisma/Redis) on the
+  // SIGTERM the Nx `@nx/js:node` executor sends when it restarts on file changes.
+  // Releasing the port before the process exits prevents the EADDRINUSE race on 3001.
+  app.enableShutdownHooks();
+
   const swagger = new DocumentBuilder()
     .setTitle('MedBoard API')
     .setDescription('Medical jobs board API')
