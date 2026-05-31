@@ -1,8 +1,7 @@
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
-import { CssBaseline, ThemeProvider } from '@mui/material';
 import type { Metadata } from 'next';
 
-import { roboto, theme } from '../theme/theme';
+import { roboto } from '../theme/theme';
+import Providers from './providers';
 
 export const metadata: Metadata = {
   title: 'MedBoard — medical jobs',
@@ -13,12 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="uk" className={roboto.className}>
       <body>
-        <AppRouterCacheProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            {children}
-          </ThemeProvider>
-        </AppRouterCacheProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
