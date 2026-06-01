@@ -1,32 +1,26 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
-import { randomUUID } from 'crypto';
 
 import { UseCase } from '../../../../shared/application/use-case.interface';
 import { User } from '../../domain/entities/user.entity';
 import { USER_REPOSITORY, UserRepository } from '../../domain/repositories/user.repository';
 import { Email } from '../../domain/value-objects/email.vo';
 import { RegisterUserInput, RegisterUserOutput } from '../dtos/register-user.dto';
-import { PASSWORD_HASHER, PasswordHasher } from '../ports/password-hasher.port';
 
 @Injectable()
 export class RegisterUserUseCase implements UseCase<RegisterUserInput, RegisterUserOutput> {
   constructor(
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
-    @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
   ) {}
 
-  async execute(input: RegisterUserInput): Promise<RegisterUserOutput> {
+  async execute(input: RegisterUserInput & { supabaseUserId: string }): Promise<RegisterUserOutput> {
     const email = Email.create(input.email);
 
     const existing = await this.users.findByEmail(email.value);
     if (existing) throw new ConflictException('Email already in use');
 
-    const passwordHash = await this.hasher.hash(input.password);
-
     const user = User.register({
-      id: randomUUID(),
+      id: input.supabaseUserId,
       email,
-      passwordHash,
       role: input.role,
       firstName: input.firstName,
       lastName: input.lastName,
