@@ -34,6 +34,19 @@ enum JobStatus {
   ARCHIVED
 }
 
+enum Shift {
+  DAY
+  NIGHT
+  ROTATING
+  WEEKEND
+}
+
+enum SalaryPeriod {
+  YEAR
+  WEEK
+  HOUR
+}
+
 enum ApplicationStatus {
   SUBMITTED
   REVIEWING
@@ -103,13 +116,21 @@ model Job {
   employerId     String         @map("employer_id") @db.Uuid
   title          String
   description    String
+  summary        String?
   specialization String
   employmentType EmploymentType @map("employment_type")
+  shift          Shift?
+  experience     String?
   salaryMin      Int?           @map("salary_min")
   salaryMax      Int?           @map("salary_max")
+  salaryPeriod   SalaryPeriod   @default(YEAR) @map("salary_period")
   currency       String         @default("USD")
+  requirements   String[]
+  benefits       String[]
   city           String?
   country        String?
+  remote         Boolean        @default(false)
+  urgent         Boolean        @default(false)
   status         JobStatus      @default(DRAFT)
   publishedAt    DateTime?      @map("published_at")
   createdAt      DateTime       @default(now()) @map("created_at")

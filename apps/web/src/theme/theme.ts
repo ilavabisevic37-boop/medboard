@@ -1,16 +1,12 @@
 'use client';
 
-import { Roboto } from 'next/font/google';
 import { createTheme } from '@mui/material/styles';
 
-export const roboto = Roboto({
-  weight: ['300', '400', '500', '700'],
-  subsets: ['latin', 'cyrillic'],
-  display: 'swap',
-});
+import { roboto } from './font';
 
 export const theme = createTheme({
-  cssVariables: true,
+  // NOTE: `cssVariables: true` requires MUI v6; this project is on v5.16.
+  // Re-enable after upgrading @mui/material, or use experimental_extendTheme.
   palette: {
     mode: 'light',
     primary: { main: '#0D7C66' }, // medical green

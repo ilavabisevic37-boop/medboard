@@ -2,7 +2,8 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import type { Metadata } from 'next';
 
-import { roboto, theme } from '../theme/theme';
+import { roboto } from '../theme/font';
+import { theme } from '../theme/theme';
 
 export const metadata: Metadata = {
   title: 'MedBoard — medical jobs',

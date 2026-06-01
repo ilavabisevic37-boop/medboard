@@ -7,7 +7,6 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 import type { Request, Response } from 'express';
 
-import { PingResolver } from './graphql/ping.resolver';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { UsersModule } from './modules/users/users.module';
@@ -33,6 +32,5 @@ import { SharedInfrastructureModule } from './shared/infrastructure/shared-infra
     JobsModule,
     ApplicationsModule,
   ],
-  providers: [PingResolver],
 })
 export class AppModule {}
