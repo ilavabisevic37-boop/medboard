@@ -1,3 +1,5 @@
+'use client';
+
 import { Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 
 import { JobSummary } from '@medboard/shared-types';

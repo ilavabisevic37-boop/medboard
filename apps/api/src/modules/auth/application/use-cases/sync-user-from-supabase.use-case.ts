@@ -24,7 +24,10 @@ export class SyncUserFromSupabaseUseCase implements UseCase<SyncUserFromSupabase
     const existing = await this.users.findById(input.id);
     
     if (existing) {
-      // Update logic if needed, e.g. rename or role update.
+      // Intentionally omitting email and role updates here.
+      // These are core domain properties that should ideally be managed by
+      // dedicated administrative workflows, rather than blindly overwritten
+      // by raw metadata from the auth provider webhook.
       existing.rename(input.firstName, input.lastName);
       await this.users.save(existing);
       return;

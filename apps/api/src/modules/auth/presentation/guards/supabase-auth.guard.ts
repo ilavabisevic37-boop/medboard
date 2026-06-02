@@ -30,6 +30,8 @@ export class SupabaseAuthGuard implements CanActivate {
       const payload = await this.jwtVerifier.verify(token);
       if (!payload.sub) throw new Error('JWT missing sub');
 
+      // TODO: For MVP, we query the DB on every request. 
+      // In the future, implement Redis caching here to reduce DB load.
       const user = await this.userRepository.findById(payload.sub);
       if (!user) {
         throw new UnauthorizedException('User not found in local database');

@@ -1,15 +1,19 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { jwtVerify } from 'jose';
+import { jwtVerify, createRemoteJWKSet } from 'jose';
 
 @Injectable()
 export class SupabaseJwtVerifier {
+  private jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
+
   async verify(token: string) {
     try {
-      const secret = process.env.SUPABASE_JWT_SECRET;
-      if (!secret) throw new Error('SUPABASE_JWT_SECRET is not set');
+      if (!this.jwks) {
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        if (!url) throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set');
+        this.jwks = createRemoteJWKSet(new URL(`${url}/rest/v1/auth/v1/jwk`));
+      }
       
-      const encoder = new TextEncoder();
-      const { payload } = await jwtVerify(token, encoder.encode(secret));
+      const { payload } = await jwtVerify(token, this.jwks);
       
       return payload;
     } catch (error) {

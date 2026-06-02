@@ -1,13 +1,12 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
-import * as express from 'express';
+import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   app.enableCors({
     origin: process.env.WEB_ORIGIN ?? 'http://localhost:3000',
@@ -15,7 +14,7 @@ async function bootstrap() {
   });
 
   app.use(cookieParser());
-  app.use('/api/auth/webhook', express.raw({ type: 'application/json' }));
+
 
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
