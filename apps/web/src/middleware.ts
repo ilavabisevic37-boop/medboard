@@ -28,13 +28,13 @@ export async function middleware(request: NextRequest) {
   )
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  const {
     data: { user },
     error,
   } = await supabase.auth.getUser()
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
   // Sync access token to 'sb-access-token' for the NestJS API Guard
   if (user && !error && session?.access_token) {

@@ -1,3 +1,5 @@
+'use client';
+
 import { Container, Typography } from '@mui/material';
 import { JobList } from '../../components/jobs/JobList';
 import { JobSummary } from '@medboard/shared-types';
