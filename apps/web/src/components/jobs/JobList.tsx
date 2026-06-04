@@ -1,4 +1,3 @@
-'use client';
 
 import { Card, CardContent, Chip, Stack, Typography } from '@mui/material';
 

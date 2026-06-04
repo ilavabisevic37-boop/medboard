@@ -10,7 +10,7 @@ export class SupabaseJwtVerifier {
       if (!this.jwks) {
         const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
         if (!url) throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set');
-        this.jwks = createRemoteJWKSet(new URL(`${url}/rest/v1/auth/v1/jwk`));
+        this.jwks = createRemoteJWKSet(new URL(`${url}/auth/v1/.well-known/jwks.json`));
       }
       
       const { payload } = await jwtVerify(token, this.jwks);

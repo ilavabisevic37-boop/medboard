@@ -8,8 +8,14 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const webOrigin = process.env.WEB_ORIGIN ?? (isDevelopment ? 'http://localhost:3000' : undefined);
+  if (!webOrigin) {
+    throw new Error('WEB_ORIGIN must be set outside development');
+  }
+
   app.enableCors({
-    origin: process.env.WEB_ORIGIN ?? 'http://localhost:3000',
+    origin: webOrigin,
     credentials: true,
   });
 

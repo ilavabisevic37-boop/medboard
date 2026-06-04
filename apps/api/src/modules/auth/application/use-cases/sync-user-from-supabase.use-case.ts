@@ -8,7 +8,7 @@ import { USER_REPOSITORY, UserRepository } from '../../../../modules/users/domai
 export interface SyncUserFromSupabaseInput {
   id: string;
   email: string;
-  role: string;
+  role: UserRole;
   firstName: string;
   lastName: string;
 }
@@ -36,7 +36,7 @@ export class SyncUserFromSupabaseUseCase implements UseCase<SyncUserFromSupabase
     await this.registerUserUseCase.execute({
       supabaseUserId: input.id,
       email: input.email,
-      role: input.role as UserRole,
+      role: input.role,
       firstName: input.firstName,
       lastName: input.lastName,
     });
