@@ -69,6 +69,7 @@
     "cookie-parser": "^1.4.7",
     "express": "^4.19.2",
     "graphql": "^16",
+    "graphql-request": "^7.4.0",
     "ioredis": "^5.4.1",
     "jose": "^5.10.0",
     "next": "^14.2.0",

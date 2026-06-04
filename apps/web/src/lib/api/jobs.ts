@@ -1,10 +1,74 @@
-import { JobSummary } from '@medboard/shared-types';
+import { gql } from 'graphql-request';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+import { JobDetail, JobFilter, JobSummary } from '@medboard/shared-types';
 
-export async function fetchJobs(params: Record<string, string> = {}): Promise<JobSummary[]> {
-  const qs = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_URL}/jobs${qs ? `?${qs}` : ''}`, { cache: 'no-store' });
-  if (!res.ok) return [];
-  return res.json();
+import { gqlClient } from '../graphql/client';
+
+const JOBS_QUERY = gql`
+  query Jobs($filter: JobFilterInput) {
+    jobs(filter: $filter) {
+      id
+      title
+      summary
+      specialization
+      employmentType
+      shift
+      city
+      country
+      remote
+      urgent
+      salaryMin
+      salaryMax
+      salaryPeriod
+      currency
+      publishedAt
+    }
+  }
+`;
+
+const JOB_QUERY = gql`
+  query Job($id: ID!) {
+    job(id: $id) {
+      id
+      title
+      summary
+      description
+      specialization
+      employmentType
+      shift
+      experience
+      city
+      country
+      remote
+      urgent
+      salaryMin
+      salaryMax
+      salaryPeriod
+      currency
+      requirements
+      benefits
+      employerId
+      status
+      publishedAt
+      createdAt
+    }
+  }
+`;
+
+export async function fetchJobs(filter: JobFilter = {}): Promise<JobSummary[]> {
+  try {
+    const data = await gqlClient.request<{ jobs: JobSummary[] }>(JOBS_QUERY, { filter });
+    return data.jobs;
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchJob(id: string): Promise<JobDetail | null> {
+  try {
+    const data = await gqlClient.request<{ job: JobDetail }>(JOB_QUERY, { id });
+    return data.job;
+  } catch {
+    return null;
+  }
 }
