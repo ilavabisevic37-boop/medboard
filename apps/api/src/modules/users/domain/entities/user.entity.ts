@@ -5,7 +5,6 @@ import { UserRole } from '../value-objects/user-role.vo';
 
 export interface UserProps {
   email: Email;
-  passwordHash: string;
   role: UserRole;
   firstName: string;
   lastName: string;
@@ -21,7 +20,6 @@ export class User extends AggregateRoot<string> {
   static register(args: {
     id: string;
     email: Email;
-    passwordHash: string;
     role: UserRole;
     firstName: string;
     lastName: string;
@@ -29,7 +27,6 @@ export class User extends AggregateRoot<string> {
     const now = new Date();
     const user = new User(args.id, {
       email: args.email,
-      passwordHash: args.passwordHash,
       role: args.role,
       firstName: args.firstName,
       lastName: args.lastName,
@@ -48,7 +45,6 @@ export class User extends AggregateRoot<string> {
   get role(): UserRole { return this.props.role; }
   get firstName(): string { return this.props.firstName; }
   get lastName(): string { return this.props.lastName; }
-  get passwordHash(): string { return this.props.passwordHash; }
   get createdAt(): Date { return this.props.createdAt; }
   get updatedAt(): Date { return this.props.updatedAt; }
 

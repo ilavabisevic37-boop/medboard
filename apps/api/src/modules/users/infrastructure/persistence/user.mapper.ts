@@ -8,7 +8,6 @@ export class UserMapper {
   static toDomain(row: PrismaUser): User {
     return User.restore(row.id, {
       email: Email.create(row.email),
-      passwordHash: row.passwordHash,
       role: row.role as unknown as UserRole,
       firstName: row.firstName,
       lastName: row.lastName,
@@ -21,7 +20,6 @@ export class UserMapper {
     return {
       id: user.id,
       email: user.email.value,
-      passwordHash: user.passwordHash,
       role: user.role as unknown as PrismaUserRole,
       firstName: user.firstName,
       lastName: user.lastName,
