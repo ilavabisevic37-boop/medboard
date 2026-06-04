@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Box,
-  Checkbox,
+  TextField,
   Typography,
 } from '@mui/material';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
@@ -188,6 +188,20 @@ export function JobFilters() {
               Clear ({activeCount})
             </Typography>
           )}
+        </Box>
+
+        <Box sx={{ p: 2.25, borderBottom: '1px solid', borderColor: '#EDF2F9' }}>
+          <TextField
+            label="Пошук"
+            size="small"
+            key={params.get('query') ?? ''}
+            defaultValue={params.get('query') ?? ''}
+            onBlur={(e) => setParam('query', e.target.value)}
+            fullWidth
+            InputProps={{
+              sx: { borderRadius: '12px' }
+            }}
+          />
         </Box>
 
         <CheckGroup

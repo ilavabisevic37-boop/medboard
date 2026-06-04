@@ -10,6 +10,7 @@ import type { Request, Response } from 'express';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { SharedInfrastructureModule } from './shared/infrastructure/shared-infrastructure.module';
 
 @Module({
@@ -29,6 +30,7 @@ import { SharedInfrastructureModule } from './shared/infrastructure/shared-infra
     }),
     SharedInfrastructureModule,
     UsersModule,
+    AuthModule,
     JobsModule,
     ApplicationsModule,
   ],
