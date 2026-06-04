@@ -1,8 +1,18 @@
 'use client';
 
 import { createTheme } from '@mui/material/styles';
+import type { Shadows } from '@mui/material/styles';
 
 import { inter } from './font';
+
+const customShadows: Shadows = [
+  'none',
+  '0 1px 2px rgba(30,50,80,0.06), 0 1px 3px rgba(30,50,80,0.05)',
+  '0 2px 6px rgba(30,50,80,0.06), 0 8px 24px rgba(30,50,80,0.06)',
+  '0 4px 12px rgba(30,50,80,0.08), 0 1px 3px rgba(30,50,80,0.04)',
+  '0 12px 40px rgba(27,52,97,0.12), 0 2px 8px rgba(27,52,97,0.06)',
+  ...Array(20).fill('0 2px 4px rgba(0,0,0,0.1)'),
+] as Shadows;
 
 /**
  * MedBoard design system — deep-blue medical marketplace.
@@ -64,16 +74,7 @@ export const theme = createTheme({
     body2: { fontSize: '0.875rem', lineHeight: 1.55 },
     button: { fontWeight: 650, textTransform: 'none' as const },
   },
-  shadows: [
-    'none',
-    '0 1px 2px rgba(30,50,80,0.06), 0 1px 3px rgba(30,50,80,0.05)',
-    '0 2px 6px rgba(30,50,80,0.06), 0 8px 24px rgba(30,50,80,0.06)',
-    '0 4px 12px rgba(30,50,80,0.08), 0 1px 3px rgba(30,50,80,0.04)',
-    '0 12px 40px rgba(27,52,97,0.12), 0 2px 8px rgba(27,52,97,0.06)',
-    // Keep the rest as defaults — MUI requires 25 entries
-    ...Array(20).fill('0 2px 4px rgba(0,0,0,0.1)'),
-  ] as unknown as typeof createTheme extends (o: infer O) => unknown
-    ? O extends { shadows?: infer S } ? S : never : never,
+  shadows: customShadows,
   components: {
     MuiButton: {
       styleOverrides: {
