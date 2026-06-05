@@ -15,6 +15,13 @@ apps/web/next-env.d.ts
 !.vscode/settings.json
 .DS_Store
 
+# Claude Code local state
+.claude
+
+# Generated / build artifacts
+next-env.d.ts
+*.tsbuildinfo
+
 # Env
 .env
 .env.local
@@ -29,6 +36,9 @@ yarn-error.log*
 
 # Testing
 coverage
+
+# GraphQL — generated SDL (code-first autoSchemaFile)
+apps/api/src/schema.gql
 
 # Prisma
 apps/api/prisma/migrations/dev.db*

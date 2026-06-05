@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { roboto } from '../theme/theme';
+import { inter } from '../theme/font';
 import Providers from './providers';
 
 export const metadata: Metadata = {
@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={roboto.className}>
-      <body>
+    <html lang="uk" className={inter.className}>
+      <body style={{ margin: 0 }}>
         <Providers>{children}</Providers>
       </body>
     </html>
