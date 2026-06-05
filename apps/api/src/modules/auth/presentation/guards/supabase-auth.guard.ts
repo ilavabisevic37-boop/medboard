@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { SupabaseJwtVerifier } from '../../infrastructure/jwt/supabase-jwt.verifier';
 import { USER_REPOSITORY, UserRepository } from '../../../../modules/users/domain/repositories/user.repository';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
@@ -19,7 +20,14 @@ export class SupabaseAuthGuard implements CanActivate {
     ]);
     if (isPublic) return true;
 
-    const request = context.switchToHttp().getRequest();
+    let request;
+    if (context.getType() === 'http') {
+      request = context.switchToHttp().getRequest();
+    } else {
+      const gqlCtx = GqlExecutionContext.create(context);
+      request = gqlCtx.getContext().req;
+    }
+
     const token = request.cookies?.['sb-access-token'];
 
     if (!token) {

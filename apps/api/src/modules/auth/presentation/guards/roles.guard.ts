@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { UserRole } from '@medboard/shared-types';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -24,7 +25,15 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    let request;
+    if (context.getType() === 'http') {
+      request = context.switchToHttp().getRequest();
+    } else {
+      const gqlCtx = GqlExecutionContext.create(context);
+      request = gqlCtx.getContext().req;
+    }
+
+    const { user } = request;
     return requiredRoles.includes(user?.role);
   }
 }
