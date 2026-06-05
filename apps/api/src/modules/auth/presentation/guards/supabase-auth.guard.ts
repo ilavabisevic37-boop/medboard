@@ -55,7 +55,8 @@ export class SupabaseAuthGuard implements CanActivate {
 
       return true;
     } catch (err) {
-      throw new UnauthorizedException(err instanceof Error ? err.message : 'Invalid token');
+      console.error('Supabase token verification failed:', err);
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }

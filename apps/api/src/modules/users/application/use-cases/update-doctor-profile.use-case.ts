@@ -1,24 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../shared/infrastructure/persistence/prisma.service';
-import { UpdateDoctorProfileInput } from '../../presentation/graphql/update-doctor-profile.input';
+
+export interface UpdateDoctorProfileCommand {
+  specialization?: string;
+  yearsOfExp?: number;
+  bio?: string | null;
+  licenseNumber?: string | null;
+  city?: string | null;
+  country?: string | null;
+}
 
 @Injectable()
 export class UpdateDoctorProfileUseCase {
   constructor(private readonly prisma: PrismaService) {}
 
-  async execute(userId: string, input: UpdateDoctorProfileInput) {
-    const updateData: any = { ...input };
+  async execute(userId: string, command: UpdateDoctorProfileCommand) {
+    const updateData: any = { ...command };
     // Remove undefined values
     Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
 
     const createData: any = {
       user: { connect: { id: userId } },
-      specialization: input.specialization || '',
-      yearsOfExp: input.yearsOfExp || 0,
-      bio: input.bio,
-      licenseNumber: input.licenseNumber,
-      city: input.city,
-      country: input.country,
+      specialization: command.specialization || '',
+      yearsOfExp: command.yearsOfExp || 0,
+      bio: command.bio,
+      licenseNumber: command.licenseNumber,
+      city: command.city,
+      country: command.country,
     };
 
     return this.prisma.doctorProfile.upsert({
