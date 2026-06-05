@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import {
   Box,
@@ -826,4 +827,6 @@ export default function HomePage() {
       <Footer />
     </Box>
   );
+
 }
+
