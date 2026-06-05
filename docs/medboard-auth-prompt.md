@@ -1,4 +1,4 @@
-# Medboard — Sign In Page Implementation Prompt
+# Medboard - Sign In Page Implementation Prompt
 
 ## Context
 

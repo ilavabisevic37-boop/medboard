@@ -20,7 +20,7 @@ export default function HeroCards() {
           top: 0,
           left: 0,
           width: '90%',
-          bgcolor: '#ffffff',
+          bgcolor: 'background.paper',
           borderRadius: '18px',
           boxShadow: '0px 12px 30px rgba(0, 0, 0, 0.08)',
           p: '14px 16px',
@@ -41,8 +41,8 @@ export default function HeroCards() {
             width: '36px',
             height: '36px',
             borderRadius: '50%',
-            bgcolor: '#EAEFFF',
-            color: '#3B66F5',
+            bgcolor: 'primary.light',
+            color: 'primary.main',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -58,7 +58,7 @@ export default function HeroCards() {
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Typography
             sx={{
-              color: '#0F1A3C',
+              color: 'text.primary',
               fontSize: '13px',
               fontWeight: 700,
               lineHeight: 1.2,
@@ -71,7 +71,7 @@ export default function HeroCards() {
           </Typography>
           <Typography
             sx={{
-              color: '#6F7E97',
+              color: 'text.secondary',
               fontSize: '11px',
               fontWeight: 400,
               lineHeight: 1.3,
@@ -89,17 +89,17 @@ export default function HeroCards() {
         <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
           <Typography
             sx={{
-              color: '#1B2B5E',
+              color: 'secondary.main',
               fontSize: '12px',
               fontWeight: 800,
               lineHeight: 1.1,
             }}
           >
-            $96k–
+            $96k-
           </Typography>
           <Typography
             sx={{
-              color: '#1B2B5E',
+              color: 'secondary.main',
               fontSize: '12px',
               fontWeight: 800,
               lineHeight: 1.1,
@@ -117,7 +117,7 @@ export default function HeroCards() {
           bottom: 0,
           right: 0,
           width: '88%',
-          bgcolor: '#ffffff',
+          bgcolor: 'background.paper',
           borderRadius: '18px',
           boxShadow: '0px 14px 34px rgba(0, 0, 0, 0.12)',
           p: '14px 16px',
@@ -138,8 +138,8 @@ export default function HeroCards() {
             width: '36px',
             height: '36px',
             borderRadius: '50%',
-            bgcolor: '#E6F9F3',
-            color: '#10B981',
+            bgcolor: 'success.light',
+            color: 'success.main',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -155,7 +155,7 @@ export default function HeroCards() {
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Typography
             sx={{
-              color: '#0F1A3C',
+              color: 'text.primary',
               fontSize: '13px',
               fontWeight: 700,
               lineHeight: 1.2,
@@ -173,7 +173,7 @@ export default function HeroCards() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '5px',
-              bgcolor: '#ECFDF5',
+              bgcolor: 'success.light',
               borderRadius: '20px',
               px: '8px',
               py: '2px',
@@ -185,12 +185,12 @@ export default function HeroCards() {
                 width: '6px',
                 height: '6px',
                 borderRadius: '50%',
-                bgcolor: '#10B981',
+                bgcolor: 'success.main',
               }}
             />
             <Typography
               sx={{
-                color: '#047857',
+                color: 'success.dark',
                 fontSize: '10px',
                 fontWeight: 600,
                 lineHeight: 1.2,

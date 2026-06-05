@@ -1,4 +1,6 @@
 import React from 'react';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import { Box, Button, Typography } from '@mui/material';
 import Link from 'next/link';
 import SignInForm from './SignInForm';
@@ -14,68 +16,49 @@ export default function AuthFormContainer() {
         flexDirection: 'column',
         justifyContent: 'center',
         minHeight: { xs: 'auto', md: '100%' },
-        py: { xs: '40px', md: '48px' },
+        py: { xs: '40px', md: 0 },
       }}
     >
-      {/* Top: Back to home link */}
-      <Box sx={{ mb: '32px' }}>
+      <Box sx={{ mb: '20px' }}>
         <Link href="/" passHref style={{ textDecoration: 'none' }}>
           <Box
             component="span"
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px',
-              color: '#6B7280', // Gray-500
-              fontSize: '13px',
+              gap: '7px',
+              color: 'grey.400',
+              fontSize: '12px',
               fontWeight: 600,
               transition: 'color 0.2s ease',
               '&:hover': {
-                color: '#111827', // Gray-900
+                color: 'text.primary',
               },
             }}
           >
-            {/* Left arrow icon */}
-            <svg
-              width="14"
-              height="10"
-              viewBox="0 0 14 10"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ transform: 'rotate(180deg)' }}
-            >
-              <path
-                d="M9 1L13 5M13 5L9 9M13 5H1"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <ArrowBackIosNewIcon sx={{ fontSize: '12px' }} />
             Back to home
           </Box>
         </Link>
       </Box>
 
-      {/* Header section */}
       <Box sx={{ mb: '8px' }}>
         <Typography
           variant="h2"
           sx={{
-            fontSize: '28px',
+            fontSize: '30px',
             fontWeight: 800,
-            color: '#111827',
-            letterSpacing: '-0.02em',
-            lineHeight: 1.2,
+            color: 'text.primary',
+            lineHeight: 1.08,
           }}
         >
           Sign in
         </Typography>
         <Typography
           sx={{
-            fontSize: '14.5px',
-            color: '#6B7280',
-            mt: '6px',
+            fontSize: '13.5px',
+            color: 'text.secondary',
+            mt: '8px',
             fontWeight: 500,
           }}
         >
@@ -83,45 +66,43 @@ export default function AuthFormContainer() {
         </Typography>
       </Box>
 
-      {/* Main Credentials Form */}
       <SignInForm />
 
-      {/* Divider */}
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
-          my: '24px',
+          my: '22px',
           width: '100%',
         }}
       >
-        <Box sx={{ flexGrow: 1, height: '1px', bgcolor: '#E5E7EB' }} />
+        <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'divider' }} />
         <Typography
           sx={{
             px: '14px',
-            color: '#9CA3AF',
-            fontSize: '13px',
+            color: 'grey.400',
+            fontSize: '12px',
             fontWeight: 500,
           }}
         >
           or
         </Typography>
-        <Box sx={{ flexGrow: 1, height: '1px', bgcolor: '#E5E7EB' }} />
+        <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'divider' }} />
       </Box>
 
-      {/* SSO Action Button */}
       <Button
         component={Link}
         href="/auth/sso"
         fullWidth
         sx={{
-          border: '1px solid #E5E7EB',
+          border: '1px solid',
+          borderColor: 'divider',
           borderRadius: '50px',
-          height: '48px',
-          bgcolor: '#ffffff',
-          color: '#374151',
+          height: '42px',
+          bgcolor: 'background.paper',
+          color: 'text.secondary',
           textTransform: 'none',
-          fontSize: '14.5px',
+          fontSize: '13.5px',
           fontWeight: 700,
           boxShadow: 'none',
           display: 'flex',
@@ -130,43 +111,20 @@ export default function AuthFormContainer() {
           gap: '10px',
           transition: 'all 0.2s ease',
           '&:hover': {
-            bgcolor: '#F9FAFB',
-            borderColor: '#D1D5DB',
+            bgcolor: 'background.default',
+            borderColor: 'grey.400',
             boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.04)',
           },
         }}
       >
-        {/* Document/SSO Icon */}
-        <svg
-          width="16"
-          height="18"
-          viewBox="0 0 16 18"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M9 1H2C1.44772 1 1 1.44772 1 2V16C1 16.5523 1.44772 17 2 17H14C14.5523 17 15 16.5523 15 16V7L9 1Z"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M9 1V7H15"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <ArticleOutlinedIcon sx={{ fontSize: '17px' }} />
         Continue with SSO
       </Button>
 
-      {/* Sign-up footer */}
       <Box
         sx={{
           textAlign: 'center',
-          mt: '32px',
+          mt: '28px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -175,8 +133,8 @@ export default function AuthFormContainer() {
       >
         <Typography
           sx={{
-            fontSize: '13.5px',
-            color: '#6B7280',
+            fontSize: '13px',
+            color: 'text.secondary',
             fontWeight: 500,
           }}
         >
@@ -186,9 +144,9 @@ export default function AuthFormContainer() {
           component={Link}
           href="/signup"
           sx={{
-            fontSize: '13.5px',
+            fontSize: '13px',
             fontWeight: 700,
-            color: '#5B7BE8',
+            color: 'primary.main',
             textDecoration: 'none',
             '&:hover': {
               textDecoration: 'underline',

@@ -9,7 +9,7 @@ export default function TrustBadge() {
         alignItems: 'center',
         gap: '8px',
         color: 'rgba(255, 255, 255, 0.6)',
-        mt: 'auto', // Push to bottom of the brand panel
+        mt: 'auto',
       }}
     >
       {/* Custom checkmark shield SVG for premium design */}
@@ -44,7 +44,7 @@ export default function TrustBadge() {
           letterSpacing: '0.02em',
         }}
       >
-        Credentials verified · HIPAA-aware
+        Credentials verified - HIPAA-aware
       </Typography>
     </Box>
   );

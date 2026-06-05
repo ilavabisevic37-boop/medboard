@@ -17,7 +17,7 @@ export default function AuthLayout() {
       <Box
         sx={{
           display: { xs: 'none', md: 'flex' },
-          width: { md: '45%', lg: '42%' },
+          width: { md: '40%' },
           flexShrink: 0,
         }}
       >
@@ -29,24 +29,20 @@ export default function AuthLayout() {
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          width: { xs: '100%', md: '55%', lg: '58%' },
+          width: { xs: '100%', md: '60%' },
           flexGrow: 1,
           justifyContent: 'center',
           alignItems: 'center',
-          px: { xs: '24px', sm: '48px' },
-          bgcolor: '#F7F9FB', // Subtle elegant light grey background wrapper
+          px: { xs: '24px', sm: '48px', lg: '64px' },
+          bgcolor: '#ffffff',
         }}
       >
-        {/* White inner wrapper for form container to pop out */}
         <Box
           sx={{
             width: '100%',
-            maxWidth: '520px',
+            maxWidth: '380px',
             bgcolor: '#ffffff',
-            borderRadius: { xs: '0px', sm: '24px' },
-            boxShadow: { xs: 'none', sm: '0px 10px 40px rgba(0, 0, 0, 0.03)' },
-            p: { xs: '20px 0px', sm: '48px 48px' },
-            border: { xs: 'none', sm: '1px solid #EAEFFF' },
+            p: 0,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
