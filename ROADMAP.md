@@ -30,7 +30,11 @@ infrastructure → presentation), транспорт GraphQL для всього
 ## 1.1. Auth-фундамент на фронті 🔴 (блокує все інше)
 
 **Фронт:**
-- **`/register`** — сторінки немає (є тільки `/login`). Бек готовий: signUp
+- ✅ **`/login` + `/register`** — зроблено за дизайном `medboard-design/`
+  (сплітскрін, вибір ролі картками, реальний Supabase signIn/signUp,
+  редірект з `?next=`). Залишились з цього блоку: "Forgot password?" (чекає
+  на reset-flow, §2.1) і SSO-кнопка (поза скоупом прототипу).
+- ~~**`/register`** — сторінки немає~~ Бек готовий: signUp
   через Supabase, вебхук `auth.controller.ts` синкає юзера в БД і бере
   роль/ім'я/прізвище з `raw_user_meta_data`. Форма: email, password,
   firstName, lastName + **вибір ролі** (Лікар / Роботодавець — toggle):

@@ -1,9 +1,13 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import AuthBrandPanel from './AuthBrandPanel';
-import AuthFormContainer from './AuthFormContainer';
+import AuthBrandPanel, { type AuthMode } from './AuthBrandPanel';
 
-export default function AuthLayout() {
+interface AuthLayoutProps {
+  mode: AuthMode;
+  children: React.ReactNode;
+}
+
+export default function AuthLayout({ mode, children }: AuthLayoutProps) {
   return (
     <Box
       sx={{
@@ -21,10 +25,10 @@ export default function AuthLayout() {
           flexShrink: 0,
         }}
       >
-        <AuthBrandPanel />
+        <AuthBrandPanel mode={mode} />
       </Box>
 
-      {/* Right Column: Sign In Form Container (Takes full width on mobile/tablet) */}
+      {/* Right Column: form container (takes full width on mobile/tablet) */}
       <Box
         sx={{
           display: 'flex',
@@ -40,7 +44,7 @@ export default function AuthLayout() {
         <Box
           sx={{
             width: '100%',
-            maxWidth: '380px',
+            maxWidth: '420px',
             bgcolor: '#ffffff',
             p: 0,
             display: 'flex',
@@ -48,7 +52,7 @@ export default function AuthLayout() {
             justifyContent: 'center',
           }}
         >
-          <AuthFormContainer />
+          {children}
         </Box>
       </Box>
     </Box>

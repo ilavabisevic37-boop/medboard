@@ -1,8 +1,5 @@
-import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 
-import { SupabaseAuthGuard } from '../../../auth/presentation/guards/supabase-auth.guard';
-import { RolesGuard } from '../../../auth/presentation/guards/roles.guard';
 import { Roles } from '../../../auth/presentation/decorators/roles.decorator';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 
@@ -24,8 +21,10 @@ export class UsersResolver {
     private readonly updateEmployerProfileUseCase: UpdateEmployerProfileUseCase,
   ) {}
 
+  // Auth is enforced by the global SupabaseAuthGuard/RolesGuard (APP_GUARD in
+  // AuthModule); method-level @UseGuards would require AuthModule providers in
+  // this module's DI context and break bootstrapping.
   @Query(() => UserType, { name: 'me' })
-  @UseGuards(SupabaseAuthGuard)
   async me(@CurrentUser() user: { id: string }): Promise<UserType> {
     return this.getUserUseCase.execute(user.id);
   }
@@ -41,7 +40,6 @@ export class UsersResolver {
   }
 
   @Mutation(() => DoctorProfileType, { name: 'updateDoctorProfile' })
-  @UseGuards(SupabaseAuthGuard, RolesGuard)
   @Roles('DOCTOR')
   async updateDoctorProfile(
     @CurrentUser() user: { id: string },
@@ -51,7 +49,6 @@ export class UsersResolver {
   }
 
   @Mutation(() => EmployerProfileType, { name: 'updateEmployerProfile' })
-  @UseGuards(SupabaseAuthGuard, RolesGuard)
   @Roles('EMPLOYER')
   async updateEmployerProfile(
     @CurrentUser() user: { id: string },

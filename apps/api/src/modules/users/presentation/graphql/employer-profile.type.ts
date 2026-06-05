@@ -8,15 +8,15 @@ export class EmployerProfileType {
   @Field()
   companyName!: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   website?: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   description?: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   city?: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   country?: string | null;
 }

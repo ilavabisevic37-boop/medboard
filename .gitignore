@@ -42,3 +42,6 @@ apps/api/src/schema.gql
 
 # Prisma
 apps/api/prisma/migrations/dev.db*
+
+# Local working notes (per-dev, not for the repo)
+ROADMAP.md

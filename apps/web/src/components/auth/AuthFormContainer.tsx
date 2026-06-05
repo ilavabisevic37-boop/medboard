@@ -1,11 +1,25 @@
 import React from 'react';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import Link from 'next/link';
-import SignInForm from './SignInForm';
 
-export default function AuthFormContainer() {
+interface AuthFormContainerProps {
+  title: string;
+  subtitle: string;
+  switchPrompt: string;
+  switchLabel: string;
+  switchHref: string;
+  children: React.ReactNode;
+}
+
+export default function AuthFormContainer({
+  title,
+  subtitle,
+  switchPrompt,
+  switchLabel,
+  switchHref,
+  children,
+}: AuthFormContainerProps) {
   return (
     <Box
       sx={{
@@ -16,7 +30,7 @@ export default function AuthFormContainer() {
         flexDirection: 'column',
         justifyContent: 'center',
         minHeight: { xs: 'auto', md: '100%' },
-        py: { xs: '40px', md: 0 },
+        py: { xs: '40px', md: '48px' },
       }}
     >
       <Box sx={{ mb: '20px' }}>
@@ -52,7 +66,7 @@ export default function AuthFormContainer() {
             lineHeight: 1.08,
           }}
         >
-          Sign in
+          {title}
         </Typography>
         <Typography
           sx={{
@@ -62,64 +76,11 @@ export default function AuthFormContainer() {
             fontWeight: 500,
           }}
         >
-          Welcome back. Enter your details to continue.
+          {subtitle}
         </Typography>
       </Box>
 
-      <SignInForm />
-
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          my: '22px',
-          width: '100%',
-        }}
-      >
-        <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'divider' }} />
-        <Typography
-          sx={{
-            px: '14px',
-            color: 'grey.400',
-            fontSize: '12px',
-            fontWeight: 500,
-          }}
-        >
-          or
-        </Typography>
-        <Box sx={{ flexGrow: 1, height: '1px', bgcolor: 'divider' }} />
-      </Box>
-
-      <Button
-        component={Link}
-        href="/auth/sso"
-        fullWidth
-        sx={{
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: '50px',
-          height: '42px',
-          bgcolor: 'background.paper',
-          color: 'text.secondary',
-          textTransform: 'none',
-          fontSize: '13.5px',
-          fontWeight: 700,
-          boxShadow: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '10px',
-          transition: 'all 0.2s ease',
-          '&:hover': {
-            bgcolor: 'background.default',
-            borderColor: 'grey.400',
-            boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.04)',
-          },
-        }}
-      >
-        <ArticleOutlinedIcon sx={{ fontSize: '17px' }} />
-        Continue with SSO
-      </Button>
+      {children}
 
       <Box
         sx={{
@@ -138,11 +99,11 @@ export default function AuthFormContainer() {
             fontWeight: 500,
           }}
         >
-          New to Medboard?
+          {switchPrompt}
         </Typography>
         <Typography
           component={Link}
-          href="/signup"
+          href={switchHref}
           sx={{
             fontSize: '13px',
             fontWeight: 700,
@@ -153,7 +114,7 @@ export default function AuthFormContainer() {
             },
           }}
         >
-          Create an account
+          {switchLabel}
         </Typography>
       </Box>
     </Box>
