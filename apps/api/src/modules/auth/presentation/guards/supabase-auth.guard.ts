@@ -24,8 +24,8 @@ export class SupabaseAuthGuard implements CanActivate {
     if (context.getType() === 'http') {
       request = context.switchToHttp().getRequest();
     } else {
-      const ctx = GqlExecutionContext.create(context);
-      request = ctx.getContext().req;
+      const gqlCtx = GqlExecutionContext.create(context);
+      request = gqlCtx.getContext().req;
     }
     const token = request.cookies?.['sb-access-token'];
 
@@ -54,7 +54,8 @@ export class SupabaseAuthGuard implements CanActivate {
 
       return true;
     } catch (err) {
-      throw new UnauthorizedException(err instanceof Error ? err.message : 'Invalid token');
+      console.error('Supabase token verification failed:', err);
+      throw new UnauthorizedException('Invalid token');
     }
   }
 }
