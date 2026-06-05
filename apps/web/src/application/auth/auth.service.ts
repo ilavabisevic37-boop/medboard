@@ -1,4 +1,4 @@
-import type { SignInCredentials } from '../../domain/auth/credentials.schema';
+import type { SignInCredentials, SignUpCredentials } from '../../domain/auth/credentials.schema';
 
 export interface SignInResponse {
   success: boolean;
@@ -9,6 +9,14 @@ export interface SignInResponse {
   };
 }
 
+export interface SignUpResponse {
+  success: boolean;
+  error?: string;
+  /** True when Supabase requires the user to confirm their email before signing in. */
+  requiresEmailConfirmation?: boolean;
+}
+
 export interface AuthService {
   signIn(credentials: SignInCredentials): Promise<SignInResponse>;
+  signUp(credentials: SignUpCredentials): Promise<SignUpResponse>;
 }

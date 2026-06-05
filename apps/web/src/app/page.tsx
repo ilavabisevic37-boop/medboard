@@ -151,6 +151,8 @@ export default function HomePage() {
           </Box>
           <Box sx={{ flex: 1 }} />
           <Button
+            component={Link}
+            href="/login"
             variant="outlined"
             size="small"
             sx={{

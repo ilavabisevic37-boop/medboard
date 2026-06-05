@@ -3,30 +3,30 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import type { SignInCredentials } from '../../domain/auth/credentials.schema';
+import type { SignUpCredentials } from '../../domain/auth/credentials.schema';
 import { authApi } from '../../lib/api/auth';
 import type { AuthService } from './auth.service';
 
-interface UseSignInOptions {
+interface UseSignUpOptions {
   authService?: AuthService;
   redirectTo?: string;
   redirectDelayMs?: number;
 }
 
-interface SignInState {
+interface SignUpState {
   isSubmitting: boolean;
   errorMessage: string | null;
   successMessage: string | null;
 }
 
-export function useSignIn({
+export function useSignUp({
   authService = authApi,
   redirectTo = '/',
   redirectDelayMs = 1000,
-}: UseSignInOptions = {}) {
+}: UseSignUpOptions = {}) {
   const router = useRouter();
   const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [state, setState] = useState<SignInState>({
+  const [state, setState] = useState<SignUpState>({
     isSubmitting: false,
     errorMessage: null,
     successMessage: null,
@@ -42,18 +42,28 @@ export function useSignIn({
   useEffect(() => clearRedirectTimer, [clearRedirectTimer]);
 
   const submit = useCallback(
-    async (credentials: SignInCredentials) => {
+    async (credentials: SignUpCredentials) => {
       clearRedirectTimer();
       setState({ isSubmitting: true, errorMessage: null, successMessage: null });
 
       try {
-        const result = await authService.signIn(credentials);
+        const result = await authService.signUp(credentials);
 
         if (!result.success) {
           setState({
             isSubmitting: false,
-            errorMessage: result.error ?? 'Authentication failed. Please check your credentials.',
+            errorMessage: result.error ?? 'Could not create the account. Please try again.',
             successMessage: null,
+          });
+          return;
+        }
+
+        if (result.requiresEmailConfirmation) {
+          // No session yet — Supabase sent a confirmation link.
+          setState({
+            isSubmitting: false,
+            errorMessage: null,
+            successMessage: 'Account created! Check your inbox and confirm your email to sign in.',
           });
           return;
         }
@@ -61,15 +71,11 @@ export function useSignIn({
         setState({
           isSubmitting: true,
           errorMessage: null,
-          successMessage: 'Successfully signed in! Redirecting...',
+          successMessage: 'Account created! Redirecting...',
         });
 
         redirectTimerRef.current = setTimeout(() => {
-          // Honor ?next=/jobs/123 set by guarded routes; only same-origin paths.
-          const next = new URLSearchParams(window.location.search).get('next');
-          router.push(next && next.startsWith('/') && !next.startsWith('//') ? next : redirectTo);
-          // Re-run the middleware + server components so the session cookie
-          // (sb-access-token) is reflected in the UI immediately.
+          router.push(redirectTo);
           router.refresh();
         }, redirectDelayMs);
       } catch {

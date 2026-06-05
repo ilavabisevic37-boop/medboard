@@ -3,7 +3,27 @@ import { Box, Typography } from '@mui/material';
 import HeroCards from './HeroCards';
 import TrustBadge from './TrustBadge';
 
-export default function AuthBrandPanel() {
+export type AuthMode = 'login' | 'register';
+
+const BRAND_COPY: Record<AuthMode, { headline: string; description: string }> = {
+  login: {
+    headline: 'Welcome back to Medboard.',
+    description:
+      'Pick up right where you left off — your matches, messages, and applications are waiting.',
+  },
+  register: {
+    headline: 'Where healthcare careers begin.',
+    description:
+      'Join 46,000+ verified clinicians and 2,400+ clinics hiring with transparency.',
+  },
+};
+
+interface AuthBrandPanelProps {
+  mode?: AuthMode;
+}
+
+export default function AuthBrandPanel({ mode = 'login' }: AuthBrandPanelProps) {
+  const copy = BRAND_COPY[mode];
   return (
     <Box
       sx={{
@@ -106,7 +126,7 @@ export default function AuthBrandPanel() {
               letterSpacing: '-0.02em',
             }}
           >
-            Welcome back to Medboard.
+            {copy.headline}
           </Typography>
 
           <Typography
@@ -120,7 +140,7 @@ export default function AuthBrandPanel() {
               mb: '28px',
             }}
           >
-            Pick up right where you left off — your matches, messages, and applications are waiting.
+            {copy.description}
           </Typography>
 
           <HeroCards />
