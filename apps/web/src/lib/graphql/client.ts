@@ -5,7 +5,7 @@ import { GraphQLClient } from 'graphql-request';
  * `/graphql` (no `/api` prefix — that prefix only applies to REST routes,
  * which on this app are reserved for the auth module).
  */
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:3001/api';
 const GRAPHQL_URL =
   process.env.NEXT_PUBLIC_GRAPHQL_URL ?? API_URL.replace(/\/api\/?$/, '') + '/graphql';
 

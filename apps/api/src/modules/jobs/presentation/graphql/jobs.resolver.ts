@@ -1,5 +1,6 @@
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
+import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { CreateJobUseCase } from '../../application/use-cases/create-job.use-case';
 import { GetJobDetailUseCase } from '../../application/use-cases/get-job-detail.use-case';
 import { SearchJobsUseCase } from '../../application/use-cases/search-jobs.use-case';
@@ -15,6 +16,7 @@ export class JobsResolver {
     private readonly createJobUseCase: CreateJobUseCase,
   ) {}
 
+  @Public()
   @Query(() => [JobType], { name: 'jobs' })
   jobs(
     @Args('filter', { type: () => JobFilterInput, nullable: true })
@@ -23,6 +25,7 @@ export class JobsResolver {
     return this.searchJobs.execute(filter ?? {});
   }
 
+  @Public()
   @Query(() => JobDetailType, { name: 'job' })
   job(@Args('id', { type: () => ID }) id: string): Promise<JobDetailType> {
     return this.getJobDetail.execute(id);
