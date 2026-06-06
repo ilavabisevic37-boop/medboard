@@ -21,13 +21,13 @@ import { Logo } from '../ui/Logo';
 const NAV_ITEMS = [
   { key: 'jobs', label: 'Find jobs', href: '/jobs' },
   { key: 'saved', label: 'Saved', href: '#' },
-  { key: 'messages', label: 'Messages', href: '#' },
+  { key: 'messages', label: 'Messages', href: '/messages' },
 ];
 
 export function AppHeader() {
   const pathname = usePathname();
   const isActive = (key: string) =>
-    key === 'jobs' ? pathname.startsWith('/jobs') : pathname === key;
+    key === 'jobs' || key === 'messages' ? pathname.startsWith(`/${key}`) : pathname === key;
 
   return (
     <AppBar
