@@ -16,6 +16,8 @@ export class JobsResolver {
     private readonly createJobUseCase: CreateJobUseCase,
   ) {}
 
+  // Public browsing — the global SupabaseAuthGuard blocks everything not
+  // marked @Public.
   @Public()
   @Query(() => [JobType], { name: 'jobs' })
   jobs(

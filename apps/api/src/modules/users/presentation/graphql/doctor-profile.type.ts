@@ -11,15 +11,15 @@ export class DoctorProfileType {
   @Field(() => Int)
   yearsOfExp!: number;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   bio?: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   licenseNumber?: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   city?: string | null;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   country?: string | null;
 }
