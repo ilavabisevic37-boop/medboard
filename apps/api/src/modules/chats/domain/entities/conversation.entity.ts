@@ -1,4 +1,5 @@
 import { AggregateRoot } from '../../../../shared/domain/aggregate-root.base';
+import { DomainException } from '../../../../shared/domain/domain.exception';
 
 export interface ConversationProps {
   applicationId: string;
@@ -32,12 +33,21 @@ export class Conversation extends AggregateRoot<string> {
   /**
    * Invariant: the only participants are the application's doctor and the
    * job's employer.
-   *
-   * TODO(chats): throw DomainException if userId is neither doctorId nor
-   * employerId. Call this in every use-case before reading or writing.
    */
+  isParticipant(userId: string): boolean {
+    return userId === this.props.doctorId || userId === this.props.employerId;
+  }
+
   assertParticipant(userId: string): void {
-    throw new Error(`TODO: implement assertParticipant (got ${userId})`);
+    if (!this.isParticipant(userId)) {
+      throw new DomainException('User is not a participant of this conversation');
+    }
+  }
+
+  /** The other side of the conversation from `userId`'s point of view. */
+  counterpartOf(userId: string): string {
+    this.assertParticipant(userId);
+    return userId === this.props.doctorId ? this.props.employerId : this.props.doctorId;
   }
 
   get applicationId(): string { return this.props.applicationId; }

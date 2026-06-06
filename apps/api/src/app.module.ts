@@ -14,6 +14,20 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SharedInfrastructureModule } from './shared/infrastructure/shared-infrastructure.module';
 
+/**
+ * The ws upgrade request never passes through Express, so cookie-parser does
+ * not run for subscriptions — parse the Cookie header by hand.
+ */
+function parseCookies(header: string | undefined): Record<string, string> {
+  if (!header) return {};
+  return Object.fromEntries(
+    header.split(';').map((pair) => {
+      const idx = pair.indexOf('=');
+      return [pair.slice(0, idx).trim(), decodeURIComponent(pair.slice(idx + 1).trim())];
+    }),
+  );
+}
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -25,14 +39,23 @@ import { SharedInfrastructureModule } from './shared/infrastructure/shared-infra
       // Disable the legacy playground; use the Apollo Sandbox landing page instead.
       playground: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
-      // Seam for the team's cookie-based auth: req/res are exposed on the
-      // GraphQL context so a guard can read the JWT cookie later.
-      context: ({ req, res }: { req: Request; res: Response }) => ({ req, res }),
+      // This factory serves BOTH transports:
+      //  - HTTP: Apollo calls it with Express's { req, res }; cookie-parser
+      //    has already populated req.cookies for SupabaseAuthGuard.
+      //  - WS (graphql-ws): @nestjs/graphql passes this same factory to
+      //    useServer(), which calls it with the graphql-ws Context — the
+      //    upgrade request lives in extra.request and skips Express entirely.
+      //    Synthesize a req with parsed cookies so the guard (and
+      //    @CurrentUser) work identically over ws.
+      context: (ctx: { req?: Request; res?: Response; extra?: { request?: { headers?: Record<string, string> } } }) => {
+        if (ctx.req) return { req: ctx.req, res: ctx.res };
+        const request = ctx.extra?.request;
+        return { req: { headers: request?.headers ?? {}, cookies: parseCookies(request?.headers?.cookie) } };
+      },
       // Chat subscriptions ride the same /graphql endpoint over graphql-ws.
-      // TODO(chats): ws auth — in onConnect, verify the Supabase JWT from
-      // connectionParams.authorization ('Bearer <jwt>') via SupabaseJwtVerifier
-      // and stash the user on the connection context so @CurrentUser()/guards
-      // work over ws too (check the ws branch in supabase-auth.guard.ts).
+      // Auth: the sb-access-token cookie arrives on the upgrade request and is
+      // verified per-operation by the global SupabaseAuthGuard (see context
+      // factory above). Participation is enforced in ChatsResolver.
       subscriptions: { 'graphql-ws': true },
     }),
     SharedInfrastructureModule,

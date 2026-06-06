@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { UseCase } from '../../../../shared/application/use-case.interface';
 import {
@@ -24,14 +24,16 @@ export class MarkConversationReadUseCase
     @Inject(MESSAGE_REPOSITORY) private readonly messages: MessageRepository,
   ) {}
 
-  /**
-   * TODO(chats):
-   *  1. load conversation (404 if missing);
-   *  2. conversation.assertParticipant(readerId);
-   *  3. messages.markRead(conversationId, readerId);
-   *  4. return true.
-   */
   async execute(input: MarkConversationReadInput): Promise<boolean> {
-    throw new Error(`TODO: implement MarkConversationReadUseCase for ${input.conversationId}`);
+    const conversation = await this.conversations.findById(input.conversationId);
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+    if (!conversation.isParticipant(input.readerId)) {
+      throw new ForbiddenException('You are not a participant of this conversation');
+    }
+
+    await this.messages.markRead(conversation.id, input.readerId);
+    return true;
   }
 }

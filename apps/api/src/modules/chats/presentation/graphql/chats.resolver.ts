@@ -1,9 +1,13 @@
-import { Inject } from '@nestjs/common';
+import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { Args, ID, Int, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { chatMessageChannel } from '../../application/ports/chat-events.publisher';
+import {
+  CONVERSATION_REPOSITORY,
+  ConversationRepository,
+} from '../../domain/repositories/conversation.repository';
 import { GetConversationUseCase } from '../../application/use-cases/get-conversation.use-case';
 import { GetMyConversationsUseCase } from '../../application/use-cases/get-my-conversations.use-case';
 import { MarkConversationReadUseCase } from '../../application/use-cases/mark-conversation-read.use-case';
@@ -22,6 +26,8 @@ export class ChatsResolver {
     private readonly sendMessageUseCase: SendMessageUseCase,
     private readonly markConversationReadUseCase: MarkConversationReadUseCase,
     @Inject(CHAT_PUB_SUB) private readonly pubSub: RedisPubSub,
+    @Inject(CONVERSATION_REPOSITORY)
+    private readonly conversationRepository: ConversationRepository,
   ) {}
 
   @Query(() => [ConversationSummaryType], { name: 'myConversations' })
@@ -60,15 +66,23 @@ export class ChatsResolver {
   }
 
   /**
-   * TODO(chats): subscriptions are NOT live yet —
-   *  1. ws auth: app.module.ts only has the `graphql-ws` seam; verify the
-   *     Supabase JWT from connectionParams in onConnect (SupabaseJwtVerifier)
-   *     and make sure supabase-auth.guard.ts handles the ws context branch;
-   *  2. participation check on subscribe: load the conversation and
-   *     assertParticipant(user.id) BEFORE returning the iterator.
+   * Auth on ws: the upgrade request's sb-access-token cookie is surfaced to
+   * the global SupabaseAuthGuard by the context factory in app.module.ts.
+   * Participation is checked HERE, before the iterator is handed out — a
+   * non-participant can never hold a live feed of someone else's chat.
    */
   @Subscription(() => MessageType, { name: 'messageAdded' })
-  messageAdded(@Args('conversationId', { type: () => ID }) conversationId: string) {
+  async messageAdded(
+    @CurrentUser() user: { id: string },
+    @Args('conversationId', { type: () => ID }) conversationId: string,
+  ) {
+    const conversation = await this.conversationRepository.findById(conversationId);
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+    if (!conversation.isParticipant(user.id)) {
+      throw new ForbiddenException('You are not a participant of this conversation');
+    }
     return this.pubSub.asyncIterator(chatMessageChannel(conversationId));
   }
 }

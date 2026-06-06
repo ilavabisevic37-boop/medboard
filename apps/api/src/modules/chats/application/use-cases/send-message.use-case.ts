@@ -1,6 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+
+import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { UseCase } from '../../../../shared/application/use-case.interface';
+import { Message } from '../../domain/entities/message.entity';
 import {
   CONVERSATION_REPOSITORY,
   ConversationRepository,
@@ -14,6 +17,7 @@ import {
   ChatEventsPublisher,
 } from '../ports/chat-events.publisher';
 import { MessageReadModel } from '../read-models/conversation.read-model';
+import { toMessageReadModel } from '../read-models/message.read-model.mapper';
 
 export interface SendMessageInput {
   conversationId: string;
@@ -29,16 +33,28 @@ export class SendMessageUseCase implements UseCase<SendMessageInput, MessageRead
     @Inject(CHAT_EVENTS_PUBLISHER) private readonly events: ChatEventsPublisher,
   ) {}
 
-  /**
-   * TODO(chats):
-   *  1. load conversation (404 if missing);
-   *  2. conversation.assertParticipant(senderId);
-   *  3. Message.create(...) (body validation lives in the entity);
-   *  4. messages.save(message);
-   *  5. events.publishMessageAdded(message) — drives the subscription;
-   *  6. return the read model.
-   */
   async execute(input: SendMessageInput): Promise<MessageReadModel> {
-    throw new Error(`TODO: implement SendMessageUseCase for ${input.conversationId}`);
+    const conversation = await this.conversations.findById(input.conversationId);
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+    if (!conversation.isParticipant(input.senderId)) {
+      throw new ForbiddenException('You are not a participant of this conversation');
+    }
+
+    // Body validation (trim, non-empty, length cap) lives in the entity.
+    const message = Message.create({
+      id: randomUUID(),
+      conversationId: conversation.id,
+      senderId: input.senderId,
+      body: input.body,
+    });
+
+    await this.messages.save(message);
+    // Drives the `messageAdded` subscription; after save so subscribers never
+    // see a message that wasn't persisted.
+    await this.events.publishMessageAdded(message);
+
+    return toMessageReadModel(message);
   }
 }

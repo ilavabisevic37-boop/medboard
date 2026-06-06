@@ -1,4 +1,5 @@
 import { Entity } from '../../../../shared/domain/entity.base';
+import { DomainException } from '../../../../shared/domain/domain.exception';
 
 export const MESSAGE_BODY_MAX_LENGTH = 4000;
 
@@ -15,15 +16,18 @@ export class Message extends Entity<string> {
     super(id);
   }
 
-  /**
-   * TODO(chats): validate body here — non-empty after trim, length up to
-   * MESSAGE_BODY_MAX_LENGTH; throw DomainException otherwise.
-   */
   static create(args: { id: string; conversationId: string; senderId: string; body: string }): Message {
+    const body = args.body.trim();
+    if (body.length === 0) {
+      throw new DomainException('Message body cannot be empty');
+    }
+    if (body.length > MESSAGE_BODY_MAX_LENGTH) {
+      throw new DomainException(`Message body cannot exceed ${MESSAGE_BODY_MAX_LENGTH} characters`);
+    }
     return new Message(args.id, {
       conversationId: args.conversationId,
       senderId: args.senderId,
-      body: args.body,
+      body,
       createdAt: new Date(),
     });
   }
