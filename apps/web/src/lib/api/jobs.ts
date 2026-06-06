@@ -59,7 +59,8 @@ export async function fetchJobs(filter: JobFilter = {}): Promise<JobSummary[]> {
   try {
     const data = await gqlClient.request<{ jobs: JobSummary[] }>(JOBS_QUERY, { filter });
     return data.jobs;
-  } catch {
+  } catch (err) {
+    console.error('FETCH JOBS ERROR:', err);
     return [];
   }
 }
