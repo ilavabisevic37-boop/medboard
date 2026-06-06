@@ -24,6 +24,7 @@ export class PrismaJobRepository implements JobRepository {
   async search(criteria: JobSearchCriteria): Promise<Job[]> {
     const where: Prisma.JobWhereInput = {
       ...(criteria.publishedOnly ? { status: PrismaJobStatus.PUBLISHED } : {}),
+      ...(criteria.employerId ? { employerId: criteria.employerId } : {}),
       ...(criteria.specialization ? { specialization: criteria.specialization } : {}),
       ...(criteria.employmentType
         ? { employmentType: criteria.employmentType as unknown as PrismaEmploymentType }

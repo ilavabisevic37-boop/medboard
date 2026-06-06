@@ -125,7 +125,7 @@ export function JobCard({ job }: Props) {
             <Box>
               {salary ? (
                 <Typography component="span" fontWeight={800} fontSize="1.125rem" color="primary.main" sx={{ letterSpacing: '-0.02em' }}>
-                  {salary} <Typography component="span" fontSize="0.875rem" color="text.secondary" fontWeight={650}>/ {job.salaryPeriod === 'YEAR' ? 'рік' : job.salaryPeriod === 'MONTH' ? 'міс' : job.salaryPeriod === 'WEEK' ? 'тиждень' : 'год'}</Typography>
+                  {salary} <Typography component="span" fontSize="0.875rem" color="text.secondary" fontWeight={650}>/ {job.salaryPeriod === 'YEAR' ? 'рік' : job.salaryPeriod === 'WEEK' ? 'тиждень' : 'год'}</Typography>
                 </Typography>
               ) : (
                 <Typography component="span" fontWeight={650} color="text.secondary" fontSize="0.9375rem">

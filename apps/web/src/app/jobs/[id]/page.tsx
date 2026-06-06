@@ -32,6 +32,8 @@ import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 
 import { fetchJob } from '../../../lib/api/jobs';
 import { employmentLabel, formatSalary, shiftLabel } from '../../../lib/format';
+import { AppHeader } from '../../../components/layout/AppHeader';
+import { ApplySection } from '../../../components/jobs/ApplySection';
 
 function Fact({ icon, label, value, accent = false }: { icon: React.ReactNode; label: string; value: string; accent?: boolean }) {
   return (
@@ -60,7 +62,9 @@ export default async function JobDetailPage({ params }: { params: { id: string }
   const avatarLetter = job.title.charAt(0).toUpperCase();
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+    <>
+      <AppHeader />
+      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
       <Button 
         component={Link} 
         href="/jobs" 
@@ -115,7 +119,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 
           {/* Facts Grid */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: { xs: 3, sm: 4 }, mb: 6 }}>
-            <Fact icon={<AttachMoneyOutlinedIcon />} label="Зарплата" value={salary ? `${salary} / ${job.salaryPeriod === 'YEAR' ? 'рік' : job.salaryPeriod === 'MONTH' ? 'міс' : 'год'}` : 'За домовленістю'} accent />
+            <Fact icon={<AttachMoneyOutlinedIcon />} label="Зарплата" value={salary ? `${salary} / ${job.salaryPeriod === 'YEAR' ? 'рік' : job.salaryPeriod === 'WEEK' ? 'тиждень' : 'год'}` : 'За домовленістю'} accent />
             <Fact icon={<WorkOutlineOutlinedIcon />} label="Зайнятість" value={employmentLabel(job.employmentType)} />
             {shift && <Fact icon={<AccessTimeOutlinedIcon />} label="Графік" value={shift} />}
             {job.city && <Fact icon={<LocationOnOutlinedIcon />} label="Локація" value={job.city} />}
@@ -177,25 +181,13 @@ export default async function JobDetailPage({ params }: { params: { id: string }
                   {salary || 'За домовленістю'}
                 </Typography>
                 {salary && (
-                   <Typography color="text.secondary" variant="body2" fontWeight={600} sx={{ mb: 3 }}>
-                     {job.salaryPeriod === 'YEAR' ? 'на рік' : job.salaryPeriod === 'MONTH' ? 'на місяць' : 'на годину'}
-                   </Typography>
+                    <Typography color="text.secondary" variant="body2" fontWeight={600} sx={{ mb: 3 }}>
+                      {job.salaryPeriod === 'YEAR' ? 'на рік' : job.salaryPeriod === 'WEEK' ? 'на тиждень' : 'на годину'}
+                    </Typography>
                 )}
 
                 <Stack spacing={2} sx={{ mt: 3 }}>
-                  <Button 
-                    variant="contained" 
-                    size="large" 
-                    fullWidth 
-                    sx={{ 
-                      py: 1.8, 
-                      fontSize: '1.05rem', 
-                      borderRadius: 999,
-                      boxShadow: '0 1px 0 rgba(255,255,255,0.15) inset, 0 4px 12px rgba(43,76,126,0.2)'
-                    }}
-                  >
-                    Відгукнутися (Потрібен вхід)
-                  </Button>
+                  <ApplySection jobId={job.id} />
                   <Button 
                     variant="outlined" 
                     size="large" 
@@ -218,5 +210,6 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         </Grid>
       </Grid>
     </Container>
+    </>
   );
 }

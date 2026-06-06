@@ -14,6 +14,7 @@ export interface JobSearchCriteria {
   urgent?: boolean;
   salaryMin?: number;
   publishedOnly?: boolean;
+  employerId?: string;
   limit?: number;
   offset?: number;
 }
