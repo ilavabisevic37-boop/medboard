@@ -71,6 +71,7 @@ model User {
   employerProfile EmployerProfile?
   jobsPosted      Job[]            @relation("EmployerJobs")
   applications    JobApplication[]
+  messagesSent    Message[]
 
   @@map("users")
 }
@@ -154,10 +155,42 @@ model JobApplication {
   createdAt  DateTime          @default(now()) @map("created_at")
   updatedAt  DateTime          @updatedAt @map("updated_at")
 
-  job    Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  doctor User @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  job          Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  doctor       User          @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  conversation Conversation?
 
   @@unique([jobId, doctorId])
   @@index([status])
   @@map("job_applications")
+}
+
+// ─────────────── chats context ───────────────
+// 1 conversation = 1 application. Participants are NOT stored separately —
+// they are derived from the application (doctorId + job.employerId).
+
+model Conversation {
+  id            String   @id @default(uuid()) @db.Uuid
+  applicationId String   @unique @map("application_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  application JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  messages    Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String    @id @default(uuid()) @db.Uuid
+  conversationId String    @map("conversation_id") @db.Uuid
+  senderId       String    @map("sender_id") @db.Uuid
+  body           String
+  readAt         DateTime? @map("read_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
 }

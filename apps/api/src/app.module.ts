@@ -8,6 +8,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 import type { Request, Response } from 'express';
 
 import { ApplicationsModule } from './modules/applications/applications.module';
+import { ChatsModule } from './modules/chats/chats.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -27,12 +28,19 @@ import { SharedInfrastructureModule } from './shared/infrastructure/shared-infra
       // Seam for the team's cookie-based auth: req/res are exposed on the
       // GraphQL context so a guard can read the JWT cookie later.
       context: ({ req, res }: { req: Request; res: Response }) => ({ req, res }),
+      // Chat subscriptions ride the same /graphql endpoint over graphql-ws.
+      // TODO(chats): ws auth — in onConnect, verify the Supabase JWT from
+      // connectionParams.authorization ('Bearer <jwt>') via SupabaseJwtVerifier
+      // and stash the user on the connection context so @CurrentUser()/guards
+      // work over ws too (check the ws branch in supabase-auth.guard.ts).
+      subscriptions: { 'graphql-ws': true },
     }),
     SharedInfrastructureModule,
     UsersModule,
     AuthModule,
     JobsModule,
     ApplicationsModule,
+    ChatsModule,
   ],
 })
 export class AppModule {}
