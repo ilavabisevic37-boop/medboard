@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
+import { DomainExceptionFilter } from './shared/presentation/domain-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { rawBody: true });
@@ -26,6 +27,8 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
   );
+  // Domain invariant violations are 400s, not 500s (works for GraphQL too).
+  app.useGlobalFilters(new DomainExceptionFilter());
 
   // Close the HTTP server (and run module destroy hooks for Prisma/Redis) on the
   // SIGTERM the Nx `@nx/js:node` executor sends when it restarts on file changes.

@@ -32,6 +32,7 @@ export function AppHeader() {
 
   const isActive = (href: string) => {
     if (href === '/jobs') return pathname.startsWith('/jobs') && pathname !== '/jobs/new';
+    if (href === '/messages') return pathname.startsWith('/messages');
     return pathname === href;
   };
 
@@ -60,6 +61,7 @@ export function AppHeader() {
       navItems.push({ label: 'Кабінет', href: '/dashboard' });
       navItems.push({ label: 'Створити вакансію', href: '/jobs/new' });
     }
+    navItems.push({ label: 'Повідомлення', href: '/messages' });
   }
 
   // Get initials
