@@ -91,7 +91,7 @@ medboard/
 
 1. Фронт реєструє юзера напряму в Supabase: `supabase.auth.signUp({ email, password, options: { data: { role, firstName, lastName } } })`.
 2. Supabase шле вебхук `POST /api/auth/webhook` → `SyncUserFromSupabaseUseCase` створює `User` у нашій БД (роль з `raw_user_meta_data`).
-3. Далі фронт ходить у GraphQL з `Authorization: Bearer <supabase-jwt>`; `SupabaseAuthGuard` верифікує токен.
+3. Next-middleware фронта кладе Supabase access token у httpOnly-куку `sb-access-token`; GraphQL-клієнт шле її з `credentials: 'include'`, а `SupabaseAuthGuard` читає куку і верифікує JWT (тому CORS на API — конкретний origin `WEB_ORIGIN` + credentials, без wildcard).
 4. Паролі в нашій БД **не зберігаються** — ними володіє Supabase.
 
 ## SOLID — як він тут реалізований

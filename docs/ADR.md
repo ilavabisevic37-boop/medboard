@@ -48,7 +48,7 @@
 
 **Контекст.** Писати власний auth (паролі, сесії, reset-флоу) — тижні роботи і ризики. Потрібні ролі (DOCTOR / EMPLOYER / ADMIN).
 
-**Рішення.** Supabase Auth володіє credentials (у нашій БД **немає** password hash — колонку видалено міграцією). Реєстрація з фронта: `supabase.auth.signUp` з `options.data = { role, firstName, lastName }` → Supabase-вебхук `POST /api/auth/webhook` → `SyncUserFromSupabaseUseCase` створює/оновлює `User` у нашій БД. Запити до API авторизуються Supabase JWT: глобальний `SupabaseAuthGuard` (APP_GUARD) верифікує токен і кладе юзера в контекст; усе закрите за замовчуванням, публічні поля позначаються `@Public()`; ролі — `RolesGuard` + `@Roles(...)`; юзер у резолвері — `@CurrentUser()`.
+**Рішення.** Supabase Auth володіє credentials (у нашій БД **немає** password hash — колонку видалено міграцією). Реєстрація з фронта: `supabase.auth.signUp` з `options.data = { role, firstName, lastName }` → Supabase-вебхук `POST /api/auth/webhook` → `SyncUserFromSupabaseUseCase` створює/оновлює `User` у нашій БД. Запити до API авторизуються Supabase JWT через **httpOnly-куку `sb-access-token`**: Next-middleware фронта синкає в неї access token сесії, GraphQL-клієнт шле її з `credentials: 'include'`, глобальний `SupabaseAuthGuard` (APP_GUARD) читає куку, верифікує JWT і кладе юзера в контекст. Усе закрите за замовчуванням, публічні поля позначаються `@Public()`; ролі — `RolesGuard` + `@Roles(...)`; юзер у резолвері — `@CurrentUser()`. Наслідок для CORS: wildcard заборонений — конкретний origin (`WEB_ORIGIN`) + `credentials: true`.
 
 **Наслідки.**
 - Email-верифікація, reset password, SSO — конфігурація Supabase, не наш код.
@@ -90,7 +90,7 @@
 **Рішення.**
 - **Модель:** `Conversation` 1:1 з `JobApplication`; учасники **не зберігаються** — виводяться з заявки (`doctorId` + `job.employerId`). Розмова створюється одразу при відгуку. Прочитаність — `readAt` на повідомленні.
 - **Реал-тайм:** GraphQL Subscription `messageAdded` поверх `graphql-ws` на тому ж `/graphql`; події через Redis pub/sub (`graphql-redis-subscriptions`, два окремі конекти publisher/subscriber — підписаний конект Redis не може виконувати команди, конект `RedisService` не переюзаємо).
-- **Auth на WS:** клієнт шле Supabase JWT у `connectionParams`, верифікація в `onConnect`; перевірка участі — domain-інваріант `assertParticipant(userId)`.
+- **Auth на WS:** кука `sb-access-token` автоматично їде в upgrade-запиті (той самий механізм, що й HTTP) — `onConnect` читає її звідти; `connectionParams` з Bearer-токеном — запасний канал на випадок кросдоменного продакшена. Перевірка участі — domain-інваріант `assertParticipant(userId)`.
 
 **Наслідки.**
 - Pub/sub через Redis → підписки працюють при кількох інстансах API.
