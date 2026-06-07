@@ -1,3 +1,4 @@
+import { DomainException } from '../../../../shared/domain/domain.exception';
 import { AggregateRoot } from '../../../../shared/domain/aggregate-root.base';
 import { ApplicationStatus } from '../value-objects/application-status.vo';
 
@@ -35,12 +36,40 @@ export class JobApplication extends AggregateRoot<string> {
   }
 
   updateStatus(status: ApplicationStatus): void {
+    if (this.props.status === status) return;
+    if (this.props.status === ApplicationStatus.WITHDRAWN) {
+      throw new DomainException('Cannot update status of a withdrawn application');
+    }
+    if (this.props.status === ApplicationStatus.REJECTED) {
+      throw new DomainException('Cannot update status of a rejected application');
+    }
+    if (this.props.status === ApplicationStatus.OFFER) {
+      throw new DomainException('Cannot update status of an application with an offer');
+    }
     this.props.status = status;
     this.props.updatedAt = new Date();
   }
 
   withdraw(): void {
+    if (this.props.status === ApplicationStatus.WITHDRAWN) return;
+    if (
+      this.props.status === ApplicationStatus.REJECTED ||
+      this.props.status === ApplicationStatus.OFFER
+    ) {
+      throw new DomainException(`Cannot withdraw application in status ${this.props.status}`);
+    }
     this.props.status = ApplicationStatus.WITHDRAWN;
+    this.props.updatedAt = new Date();
+  }
+
+  reactivate(coverLetter?: string): void {
+    if (this.props.status !== ApplicationStatus.WITHDRAWN) {
+      throw new DomainException('Only withdrawn applications can be reactivated');
+    }
+    this.props.status = ApplicationStatus.SUBMITTED;
+    if (coverLetter !== undefined) {
+      this.props.coverLetter = coverLetter;
+    }
     this.props.updatedAt = new Date();
   }
 

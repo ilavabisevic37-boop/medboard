@@ -5,6 +5,8 @@ import { UseCase } from '../../../../shared/application/use-case.interface';
 import { JobApplication } from '../../domain/entities/job-application.entity';
 import { JOB_APPLICATION_REPOSITORY, JobApplicationRepository } from '../../domain/repositories/job-application.repository';
 import { JOB_REPOSITORY, JobRepository } from '../../../jobs/domain/repositories/job.repository';
+import { JobStatus } from '../../../jobs/domain/value-objects/job-status.vo';
+import { ApplicationStatus } from '../../domain/value-objects/application-status.vo';
 
 export interface ApplyToJobInput {
   jobId: string;
@@ -27,8 +29,17 @@ export class ApplyToJobUseCase implements UseCase<ApplyToJobInput, { id: string 
       throw new NotFoundException('Job not found');
     }
 
+    if (job.status !== JobStatus.PUBLISHED) {
+      throw new BadRequestException('You can only apply to published jobs');
+    }
+
     const existing = await this.applications.findByJobAndDoctor(input.jobId, input.doctorId);
     if (existing) {
+      if (existing.status === ApplicationStatus.WITHDRAWN) {
+        existing.reactivate(input.coverLetter);
+        await this.applications.save(existing);
+        return { id: existing.id };
+      }
       throw new BadRequestException('You have already applied to this job');
     }
 

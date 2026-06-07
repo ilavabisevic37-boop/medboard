@@ -1,9 +1,10 @@
-import { Inject, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { UseCase } from '../../../../shared/application/use-case.interface';
 import { JobApplication } from '../../domain/entities/job-application.entity';
 import { JOB_APPLICATION_REPOSITORY, JobApplicationRepository } from '../../domain/repositories/job-application.repository';
 import { JOB_REPOSITORY, JobRepository } from '../../../jobs/domain/repositories/job.repository';
+import { assertJobOwner } from '../../../jobs/application/guards/assert-job-owner';
 
 export interface GetJobApplicationsInput {
   jobId: string;
@@ -25,9 +26,7 @@ export class GetJobApplicationsUseCase implements UseCase<GetJobApplicationsInpu
       throw new NotFoundException('Job not found');
     }
 
-    if (job.employerId !== input.employerId) {
-      throw new ForbiddenException('You are not authorized to view applications for this job');
-    }
+    assertJobOwner(job, input.employerId);
 
     return this.applications.findByJobId(input.jobId);
   }

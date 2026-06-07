@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -12,7 +12,6 @@ import {
   FormControl,
   FormControlLabel,
   Grid,
-  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -20,33 +19,17 @@ import {
   Typography,
   Stack,
   Divider,
-  List,
-  ListItem,
-  ListItemText,
   CircularProgress,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import { AppHeader } from '../../../components/layout/AppHeader';
-import { useAuth } from '../../../application/auth/useAuth';
 import { createJob, publishJob } from '../../../lib/api/jobs';
+import { RoleGuard } from '../../../components/auth/RoleGuard';
+import { DynamicListInput } from '../../../components/ui/DynamicListInput';
 
-export default function NewJobPage() {
+function NewJobPageContent() {
   const router = useRouter();
-  const { role, isAuthenticated, loading: authLoading } = useAuth();
-
-  // Redirect if not employer
-  useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated) {
-        router.push('/login?next=/jobs/new');
-      } else if (role !== 'EMPLOYER') {
-        router.push('/jobs');
-      }
-    }
-  }, [isAuthenticated, role, authLoading, router]);
 
   // Form states
   const [title, setTitle] = useState('');
@@ -66,35 +49,12 @@ export default function NewJobPage() {
   const [urgent, setUrgent] = useState(false);
 
   // Dynamic requirements and benefits list
-  const [reqInput, setReqInput] = useState('');
   const [requirements, setRequirements] = useState<string[]>([]);
-  const [benInput, setBenInput] = useState('');
   const [benefits, setBenefits] = useState<string[]>([]);
 
+  const [createdJobId, setCreatedJobId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const handleAddRequirement = () => {
-    if (reqInput.trim()) {
-      setRequirements([...requirements, reqInput.trim()]);
-      setReqInput('');
-    }
-  };
-
-  const handleRemoveRequirement = (index: number) => {
-    setRequirements(requirements.filter((_, i) => i !== index));
-  };
-
-  const handleAddBenefit = () => {
-    if (benInput.trim()) {
-      setBenefits([...benefits, benInput.trim()]);
-      setBenInput('');
-    }
-  };
-
-  const handleRemoveBenefit = (index: number) => {
-    setBenefits(benefits.filter((_, i) => i !== index));
-  };
 
   const handleSubmit = async (action: 'draft' | 'publish') => {
     if (!title.trim() || !specialization.trim() || !description.trim()) {
@@ -126,7 +86,11 @@ export default function NewJobPage() {
     };
 
     try {
-      const jobId = await createJob(input);
+      let jobId = createdJobId;
+      if (!jobId) {
+        jobId = await createJob(input);
+        setCreatedJobId(jobId);
+      }
       if (action === 'publish') {
         await publishJob(jobId);
       }
@@ -138,53 +102,45 @@ export default function NewJobPage() {
     }
   };
 
-  if (authLoading || submitting) {
-    return (
-      <>
-        <AppHeader />
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', gap: 2 }}>
-          <CircularProgress color="primary" />
-          <Typography variant="body1" color="text.secondary">
-            {submitting ? 'Збереження вакансії...' : 'Перевірка авторизації...'}
-          </Typography>
-        </Box>
-      </>
-    );
-  }
-
-  if (role !== 'EMPLOYER') {
-    return null;
-  }
-
   return (
     <>
       <AppHeader />
-      <Container maxWidth="md" sx={{ py: 5 }}>
+      <Container maxWidth="lg" sx={{ py: 5 }}>
+        {/* Back button */}
         <Button
           onClick={() => router.push('/dashboard')}
           startIcon={<ArrowBackIcon />}
-          sx={{ mb: 3, fontWeight: 700, color: 'text.secondary' }}
+          sx={{ mb: 3, fontWeight: 700 }}
         >
           Назад до кабінету
         </Button>
 
-        <Typography variant="h4" fontWeight={850} sx={{ mb: 1, letterSpacing: '-0.03em' }}>
-          Створення нової вакансії
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          Заповніть інформацію нижче, щоб додати пропозицію роботи для лікарів.
-        </Typography>
+        {/* Title */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" fontWeight={850} sx={{ letterSpacing: '-0.03em', mb: 1 }}>
+            Створення вакансії
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Заповніть форму для створення нової вакансії на MedBoard.
+          </Typography>
+        </Box>
 
         {error && (
-          <Box sx={{ p: 2.5, bgcolor: 'error.light', color: 'error.main', borderRadius: 3, mb: 4, fontWeight: 650 }}>
+          <Box sx={{ mb: 3, p: 2, bgcolor: 'error.light', color: 'error.main', borderRadius: 3, fontWeight: 700 }}>
             {error}
           </Box>
         )}
 
-        <Card variant="outlined" sx={{ borderRadius: 4, p: { xs: 2, md: 4 } }}>
-          <CardContent>
+        {submitting && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+            <CircularProgress color="primary" />
+          </Box>
+        )}
+
+        <Card variant="outlined" sx={{ borderRadius: 4 }}>
+          <CardContent sx={{ p: { xs: 3, md: 5 } }}>
             <Typography variant="h6" fontWeight={750} sx={{ mb: 3 }}>
-              Загальна інформація
+              Основна інформація
             </Typography>
 
             <Grid container spacing={3}>
@@ -211,49 +167,6 @@ export default function NewJobPage() {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Досвід роботи"
-                  placeholder="наприклад, від 2 років"
-                  fullWidth
-                  variant="outlined"
-                  value={experience}
-                  onChange={(e) => setExperience(e.target.value)}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  label="Короткий опис (Summary)"
-                  placeholder="Короткий огляд вакансії в 1-2 реченнях..."
-                  fullWidth
-                  variant="outlined"
-                  value={summary}
-                  onChange={(e) => setSummary(e.target.value)}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  label="Повний опис вакансії *"
-                  placeholder="Детальні обов'язки, умови та вимоги..."
-                  fullWidth
-                  multiline
-                  rows={8}
-                  variant="outlined"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </Grid>
-            </Grid>
-
-            <Divider sx={{ my: 4 }} />
-
-            <Typography variant="h6" fontWeight={750} sx={{ mb: 3 }}>
-              Умови зайнятості та локація
-            </Typography>
-
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel>Тип зайнятості</InputLabel>
                   <Select
@@ -264,29 +177,68 @@ export default function NewJobPage() {
                     <MenuItem value="FULL_TIME">Повна зайнятість</MenuItem>
                     <MenuItem value="PART_TIME">Часткова зайнятість</MenuItem>
                     <MenuItem value="CONTRACT">Контракт</MenuItem>
-                    <MenuItem value="LOCUM">Тимчасова робота / Локум</MenuItem>
-                    <MenuItem value="INTERNSHIP">Стажування / Інтернатура</MenuItem>
+                    <MenuItem value="LOCUM">Тимчасова робота (Locum)</MenuItem>
+                    <MenuItem value="INTERNSHIP">Стажування</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Зміна</InputLabel>
-                  <Select
-                    value={shift}
-                    label="Зміна"
-                    onChange={(e) => setShift(e.target.value)}
-                  >
-                    <MenuItem value="">Не вказано</MenuItem>
-                    <MenuItem value="DAY">Денна зміна</MenuItem>
-                    <MenuItem value="NIGHT">Нічна зміна</MenuItem>
-                    <MenuItem value="ROTATING">Змінний графік</MenuItem>
-                    <MenuItem value="WEEKEND">Робота у вихідні</MenuItem>
-                  </Select>
-                </FormControl>
+                <TextField
+                  label="Зміна / графік роботи"
+                  placeholder="наприклад, Денна, Подобово"
+                  fullWidth
+                  variant="outlined"
+                  value={shift}
+                  onChange={(e) => setShift(e.target.value)}
+                />
               </Grid>
 
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Необхідний досвід"
+                  placeholder="наприклад, Від 2 років"
+                  fullWidth
+                  variant="outlined"
+                  value={experience}
+                  onChange={(e) => setExperience(e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  label="Короткий опис"
+                  placeholder="Короткий опис для прев'ю вакансії..."
+                  fullWidth
+                  variant="outlined"
+                  multiline
+                  rows={2}
+                  value={summary}
+                  onChange={(e) => setSummary(e.target.value)}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  label="Детальний опис *"
+                  placeholder="Опишіть обов'язки, умови та очікування від кандидата..."
+                  fullWidth
+                  variant="outlined"
+                  multiline
+                  rows={6}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 4 }} />
+
+            <Typography variant="h6" fontWeight={750} sx={{ mb: 3 }}>
+              Локація та умови
+            </Typography>
+
+            <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <TextField
                   label="Місто"
@@ -398,69 +350,19 @@ export default function NewJobPage() {
 
             <Divider sx={{ my: 4 }} />
 
-            <Typography variant="h6" fontWeight={750} sx={{ mb: 2 }}>
-              Вимоги (Requirements)
-            </Typography>
-            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-              <TextField
-                placeholder="Введіть вимогу до кандидата..."
-                fullWidth
-                variant="outlined"
-                value={reqInput}
-                onChange={(e) => setReqInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddRequirement())}
-              />
-              <Button variant="outlined" onClick={handleAddRequirement} startIcon={<AddIcon />}>
-                Додати
-              </Button>
-            </Stack>
-            <List dense sx={{ mb: 3 }}>
-              {requirements.map((req, idx) => (
-                <ListItem
-                  key={idx}
-                  secondaryAction={
-                    <IconButton edge="end" onClick={() => handleRemoveRequirement(idx)}>
-                      <DeleteIcon color="error" />
-                    </IconButton>
-                  }
-                  sx={{ bgcolor: 'background.default', borderRadius: 2, mb: 1 }}
-                >
-                  <ListItemText primary={req} />
-                </ListItem>
-              ))}
-            </List>
+            <DynamicListInput
+              title="Вимоги (Requirements)"
+              placeholder="Введіть вимогу до кандидата..."
+              items={requirements}
+              onChange={setRequirements}
+            />
 
-            <Typography variant="h6" fontWeight={750} sx={{ mb: 2 }}>
-              Переваги (Benefits)
-            </Typography>
-            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-              <TextField
-                placeholder="Введіть перевагу або бонус..."
-                fullWidth
-                variant="outlined"
-                value={benInput}
-                onChange={(e) => setBenInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddBenefit())}
-              />
-              <Button variant="outlined" onClick={handleAddBenefit} startIcon={<AddIcon />}>
-                Додати
-              </Button>
-            </Stack>
-            <List dense>
-              {benefits.map((ben, idx) => (
-                <ListItem
-                  key={idx}
-                  secondaryAction={
-                    <IconButton edge="end" onClick={() => handleRemoveBenefit(idx)}>
-                      <DeleteIcon color="error" />
-                    </IconButton>
-                  }
-                  sx={{ bgcolor: 'background.default', borderRadius: 2, mb: 1 }}
-                >
-                  <ListItemText primary={ben} />
-                </ListItem>
-              ))}
-            </List>
+            <DynamicListInput
+              title="Переваги (Benefits)"
+              placeholder="Введіть перевагу або бонус..."
+              items={benefits}
+              onChange={setBenefits}
+            />
           </CardContent>
         </Card>
 
@@ -483,5 +385,13 @@ export default function NewJobPage() {
         </Stack>
       </Container>
     </>
+  );
+}
+
+export default function NewJobPage() {
+  return (
+    <RoleGuard allowedRole="EMPLOYER">
+      <NewJobPageContent />
+    </RoleGuard>
   );
 }

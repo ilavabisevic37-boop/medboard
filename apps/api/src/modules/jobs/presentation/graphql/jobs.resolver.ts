@@ -1,5 +1,5 @@
-import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Inject, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Args, ID, Mutation, Query, Resolver, Int } from '@nestjs/graphql';
+import { Inject, NotFoundException } from '@nestjs/common';
 
 import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { Roles } from '../../../auth/presentation/decorators/roles.decorator';
@@ -12,6 +12,7 @@ import { toJobDetail } from '../../application/read-models/job.read-model';
 import { CreateJobInputType } from './create-job.input';
 import { JobDetailType, JobType } from './job.type';
 import { JobFilterInput } from './job-filter.input';
+import { assertJobOwner } from '../../application/guards/assert-job-owner';
 
 @Resolver(() => JobType)
 export class JobsResolver {
@@ -42,8 +43,17 @@ export class JobsResolver {
 
   @Query(() => [JobDetailType], { name: 'myJobs' })
   @Roles('EMPLOYER')
-  async myJobs(@CurrentUser() user: { id: string }): Promise<JobDetailType[]> {
-    const list = await this.jobRepository.search({ employerId: user.id, publishedOnly: false });
+  async myJobs(
+    @CurrentUser() user: { id: string },
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+  ): Promise<JobDetailType[]> {
+    const list = await this.jobRepository.search({
+      employerId: user.id,
+      publishedOnly: false,
+      limit: limit ?? 100,
+      offset,
+    });
     return list.map(toJobDetail);
   }
 
@@ -68,9 +78,7 @@ export class JobsResolver {
   ): Promise<string> {
     const job = await this.jobRepository.findById(id);
     if (!job) throw new NotFoundException('Job not found');
-    if (job.employerId !== user.id) {
-      throw new UnauthorizedException('You are not authorized to publish this job');
-    }
+    assertJobOwner(job, user.id);
     job.publish();
     await this.jobRepository.save(job);
     return job.id;
@@ -84,9 +92,7 @@ export class JobsResolver {
   ): Promise<string> {
     const job = await this.jobRepository.findById(id);
     if (!job) throw new NotFoundException('Job not found');
-    if (job.employerId !== user.id) {
-      throw new UnauthorizedException('You are not authorized to close this job');
-    }
+    assertJobOwner(job, user.id);
     job.close();
     await this.jobRepository.save(job);
     return job.id;

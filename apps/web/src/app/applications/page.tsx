@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Box,
@@ -12,7 +11,6 @@ import {
   CircularProgress,
   Container,
   Divider,
-  Grid,
   Paper,
   Stack,
   Typography,
@@ -23,27 +21,14 @@ import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import LaunchIcon from '@mui/icons-material/Launch';
 
 import { AppHeader } from '../../components/layout/AppHeader';
-import { useAuth } from '../../application/auth/useAuth';
 import { fetchMyApplications, withdrawApplication } from '../../lib/api/applications';
+import { getAppStatusStyle } from '../../lib/format';
+import { RoleGuard } from '../../components/auth/RoleGuard';
 
-export default function DoctorApplications() {
-  const router = useRouter();
-  const { role, isAuthenticated, loading: authLoading } = useAuth();
-
+function DoctorApplicationsContent() {
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-
-  // Redirect if not doctor
-  useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated) {
-        router.push('/login?next=/applications');
-      } else if (role !== 'DOCTOR') {
-        router.push('/jobs');
-      }
-    }
-  }, [isAuthenticated, role, authLoading, router]);
 
   // Load doctor's applications
   const loadApplications = async () => {
@@ -59,10 +44,8 @@ export default function DoctorApplications() {
   };
 
   useEffect(() => {
-    if (isAuthenticated && role === 'DOCTOR') {
-      loadApplications();
-    }
-  }, [isAuthenticated, role]);
+    loadApplications();
+  }, []);
 
   // Withdraw application action
   const handleWithdraw = async (id: string) => {
@@ -78,40 +61,6 @@ export default function DoctorApplications() {
       setActionLoading(null);
     }
   };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'SUBMITTED':
-        return { color: 'primary' as const, label: 'Надіслано' };
-      case 'REVIEWING':
-        return { color: 'warning' as const, label: 'Розглядається' };
-      case 'INTERVIEW':
-        return { color: 'secondary' as const, label: 'Співбесіда' };
-      case 'OFFER':
-        return { color: 'success' as const, label: 'Оффер' };
-      case 'REJECTED':
-        return { color: 'error' as const, label: 'Відхилено' };
-      case 'WITHDRAWN':
-        return { color: 'default' as const, label: 'Відкликано' };
-      default:
-        return { color: 'default' as const, label: status };
-    }
-  };
-
-  if (authLoading) {
-    return (
-      <>
-        <AppHeader />
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-          <CircularProgress color="primary" />
-        </Box>
-      </>
-    );
-  }
-
-  if (role !== 'DOCTOR') {
-    return null;
-  }
 
   return (
     <>
@@ -146,7 +95,7 @@ export default function DoctorApplications() {
           <Stack spacing={3}>
             {applications.map((app) => {
               const job = app.job || {};
-              const stat = getStatusColor(app.status);
+              const stat = getAppStatusStyle(app.status);
               const isWithdrawing = actionLoading === app.id;
               const isWithdrawDisabled = ['OFFER', 'REJECTED', 'WITHDRAWN'].includes(app.status);
 
@@ -180,7 +129,7 @@ export default function DoctorApplications() {
                       </Box>
                       <Chip
                         label={stat.label}
-                        color={stat.color}
+                        color={stat.color as any}
                         sx={{ fontWeight: 750 }}
                       />
                     </Stack>
@@ -244,5 +193,13 @@ export default function DoctorApplications() {
         )}
       </Container>
     </>
+  );
+}
+
+export default function DoctorApplications() {
+  return (
+    <RoleGuard allowedRole="DOCTOR">
+      <DoctorApplicationsContent />
+    </RoleGuard>
   );
 }

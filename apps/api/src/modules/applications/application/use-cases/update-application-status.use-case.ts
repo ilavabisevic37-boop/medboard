@@ -1,9 +1,10 @@
-import { Inject, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { UseCase } from '../../../../shared/application/use-case.interface';
 import { JOB_APPLICATION_REPOSITORY, JobApplicationRepository } from '../../domain/repositories/job-application.repository';
 import { JOB_REPOSITORY, JobRepository } from '../../../jobs/domain/repositories/job.repository';
 import { ApplicationStatus } from '../../domain/value-objects/application-status.vo';
+import { assertJobOwner } from '../../../jobs/application/guards/assert-job-owner';
 
 export interface UpdateApplicationStatusInput {
   id: string;
@@ -31,9 +32,7 @@ export class UpdateApplicationStatusUseCase implements UseCase<UpdateApplication
       throw new NotFoundException('Job not found');
     }
 
-    if (job.employerId !== input.employerId) {
-      throw new ForbiddenException('You are not authorized to update application status for this job');
-    }
+    assertJobOwner(job, input.employerId);
 
     application.updateStatus(input.status);
     await this.applications.save(application);

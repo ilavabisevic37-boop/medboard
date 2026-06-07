@@ -32,7 +32,27 @@ export class ApplicationsResolver {
   @Query(() => [JobApplicationType], { name: 'myApplications' })
   @Roles('DOCTOR')
   async myApplications(@CurrentUser() user: { id: string }) {
-    return this.getDoctorApplicationsUseCase.execute(user.id);
+    const apps = await this.getDoctorApplicationsUseCase.execute(user.id);
+    const jobIds = [...new Set(apps.map(a => a.jobId))];
+    const jobs = await Promise.all(jobIds.map(id => this.jobRepository.findById(id)));
+    const jobsMap = new Map(jobs.filter((j): j is any => !!j).map(j => [j.id, toJobDetail(j)]));
+
+    const doctor = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      include: { doctorProfile: true },
+    });
+
+    return apps.map(app => ({
+      id: app.id,
+      jobId: app.jobId,
+      doctorId: app.doctorId,
+      coverLetter: app.coverLetter,
+      status: app.status,
+      createdAt: app.createdAt,
+      updatedAt: app.updatedAt,
+      job: jobsMap.get(app.jobId),
+      doctor,
+    }));
   }
 
   @Query(() => [JobApplicationType], { name: 'jobApplications' })
@@ -41,7 +61,28 @@ export class ApplicationsResolver {
     @CurrentUser() user: { id: string },
     @Args('jobId', { type: () => ID }) jobId: string,
   ) {
-    return this.getJobApplicationsUseCase.execute({ jobId, employerId: user.id });
+    const apps = await this.getJobApplicationsUseCase.execute({ jobId, employerId: user.id });
+    const jobDomain = await this.jobRepository.findById(jobId);
+    const job = jobDomain ? toJobDetail(jobDomain) : undefined;
+
+    const doctorIds = [...new Set(apps.map(a => a.doctorId))];
+    const doctors = await this.prisma.user.findMany({
+      where: { id: { in: doctorIds } },
+      include: { doctorProfile: true },
+    });
+    const doctorsMap = new Map(doctors.map(d => [d.id, d]));
+
+    return apps.map(app => ({
+      id: app.id,
+      jobId: app.jobId,
+      doctorId: app.doctorId,
+      coverLetter: app.coverLetter,
+      status: app.status,
+      createdAt: app.createdAt,
+      updatedAt: app.updatedAt,
+      job,
+      doctor: doctorsMap.get(app.doctorId),
+    }));
   }
 
   @Mutation(() => ID, { name: 'applyToJob' })
@@ -86,6 +127,7 @@ export class ApplicationsResolver {
 
   @ResolveField()
   async job(@Parent() application: any) {
+    if (application.job) return application.job;
     const job = await this.jobRepository.findById(application.jobId);
     if (!job) throw new NotFoundException('Job not found');
     return toJobDetail(job);
@@ -93,6 +135,7 @@ export class ApplicationsResolver {
 
   @ResolveField()
   async doctor(@Parent() application: any) {
+    if (application.doctor) return application.doctor;
     const user = await this.prisma.user.findUnique({
       where: { id: application.doctorId },
       include: { doctorProfile: true },

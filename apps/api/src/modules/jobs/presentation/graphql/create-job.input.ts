@@ -16,8 +16,7 @@ import { Shift } from '../../domain/value-objects/shift.vo';
 
 @InputType()
 export class CreateJobInputType {
-  // TODO(auth): drop this field and read the employer from the auth context.
-  @Field(() => ID) @IsUUID() employerId!: string;
+
   @Field() @IsString() title!: string;
   @Field() @IsString() description!: string;
   @Field({ nullable: true }) @IsOptional() @IsString() summary?: string;

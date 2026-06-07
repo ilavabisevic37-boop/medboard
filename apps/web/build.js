@@ -7,17 +7,9 @@ const distDir = path.resolve(projectRoot, '../../dist/apps/web');
 
 console.log('Building Next.js application...');
 try {
-  const cleanEnv = {};
-  const whitelist = [
-    'PATH', 'Path', 'SYSTEMROOT', 'SystemRoot', 'TEMP', 'TMP', 
-    'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH', 'USERNAME', 
-    'PROCESSOR_ARCHITECTURE', 'COMSPEC', 'ComSpec'
-  ];
-  for (const key of whitelist) {
-    if (process.env[key] !== undefined) {
-      cleanEnv[key] = process.env[key];
-    }
-  }
+  const cleanEnv = {
+    ...process.env
+  };
   // Run Next.js build
   execSync('npx next build', {
     cwd: projectRoot,
@@ -65,12 +57,7 @@ if (fs.existsSync(standaloneDir)) {
   } catch (err) {
     console.error('Error copying standalone files:', err);
     // Exit with code 0 on Windows local builds if it's just a copying warning, but fail on CI/CD
-    if (process.platform === 'win32') {
-      console.warn('Windows copy completed with warnings. Bypassing error for local development.');
-      process.exit(0);
-    } else {
-      process.exit(1);
-    }
+    process.exit(1);
   }
 } else {
   console.log('Standalone build not found. Copying standard .next folder...');

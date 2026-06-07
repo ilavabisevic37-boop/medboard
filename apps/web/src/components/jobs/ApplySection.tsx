@@ -16,7 +16,7 @@ import {
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 
 import { useAuth } from '../../application/auth/useAuth';
-import { applyToJob, fetchMyApplications } from '../../lib/api/applications';
+import { applyToJob, checkMyApplicationStatus } from '../../lib/api/applications';
 
 interface ApplySectionProps {
   jobId: string;
@@ -40,14 +40,10 @@ export function ApplySection({ jobId }: ApplySectionProps) {
       return;
     }
 
-    // Check if the current doctor has already applied to this job
-    fetchMyApplications()
-      .then((apps) => {
-        const found = apps.some((app) => app.jobId === jobId && app.status !== 'WITHDRAWN');
-        setHasApplied(found);
-      })
-      .catch((err) => {
-        console.error('Failed to fetch applications:', err);
+    // Lightweight check — only fetches id, jobId, status (no nested job/doctor)
+    checkMyApplicationStatus(jobId)
+      .then(({ hasApplied }) => {
+        setHasApplied(hasApplied);
       })
       .finally(() => {
         setLoading(false);

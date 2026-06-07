@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Box,
@@ -20,41 +19,25 @@ import {
   Paper,
   Avatar,
   FormControl,
-  InputLabel,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 
 import { AppHeader } from '../../components/layout/AppHeader';
-import { useAuth } from '../../application/auth/useAuth';
 import { fetchMyJobs, publishJob, closeJob } from '../../lib/api/jobs';
 import { fetchJobApplications, updateApplicationStatus } from '../../lib/api/applications';
-import { formatSalary } from '../../lib/format';
+import { formatSalary, getJobStatusStyle, getAppStatusStyle } from '../../lib/format';
+import { RoleGuard } from '../../components/auth/RoleGuard';
 
-export default function EmployerDashboard() {
-  const router = useRouter();
-  const { role, isAuthenticated, loading: authLoading } = useAuth();
-
+function EmployerDashboardContent() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [applications, setApplications] = useState<any[]>([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [loadingApps, setLoadingApps] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-
-  // Redirect if not employer
-  useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated) {
-        router.push('/login?next=/dashboard');
-      } else if (role !== 'EMPLOYER') {
-        router.push('/jobs');
-      }
-    }
-  }, [isAuthenticated, role, authLoading, router]);
 
   // Load jobs
   const loadJobs = async () => {
@@ -74,10 +57,8 @@ export default function EmployerDashboard() {
   };
 
   useEffect(() => {
-    if (isAuthenticated && role === 'EMPLOYER') {
-      loadJobs();
-    }
-  }, [isAuthenticated, role]);
+    loadJobs();
+  }, []);
 
   // Load applications when selected job changes
   useEffect(() => {
@@ -141,70 +122,6 @@ export default function EmployerDashboard() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'DRAFT':
-        return { bg: 'warning.light', color: 'warning.main', label: 'Чернетка' };
-      case 'PUBLISHED':
-        return { bg: 'success.light', color: 'success.main', label: 'Опубліковано' };
-      case 'CLOSED':
-        return { bg: 'error.light', color: 'error.main', label: 'Закрито' };
-      default:
-        return { bg: 'grey.200', color: 'text.secondary', label: status };
-    }
-  };
-
-  const getAppStatusLabel = (status: string) => {
-    switch (status) {
-      case 'SUBMITTED':
-        return 'Надіслано';
-      case 'REVIEWING':
-        return 'Розглядається';
-      case 'INTERVIEW':
-        return 'Співбесіда';
-      case 'OFFER':
-        return 'Оффер';
-      case 'REJECTED':
-        return 'Відхилено';
-      case 'WITHDRAWN':
-        return 'Відкликано';
-      default:
-        return status;
-    }
-  };
-
-  const getAppStatusColor = (status: string) => {
-    switch (status) {
-      case 'SUBMITTED':
-        return 'primary';
-      case 'REVIEWING':
-        return 'warning';
-      case 'INTERVIEW':
-        return 'secondary';
-      case 'OFFER':
-        return 'success';
-      case 'REJECTED':
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
-  if (authLoading) {
-    return (
-      <>
-        <AppHeader />
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-          <CircularProgress color="primary" />
-        </Box>
-      </>
-    );
-  }
-
-  if (role !== 'EMPLOYER') {
-    return null;
-  }
-
   const selectedJob = jobs.find((j) => j.id === selectedJobId);
 
   return (
@@ -258,7 +175,7 @@ export default function EmployerDashboard() {
               <Stack spacing={2}>
                 {jobs.map((job) => {
                   const active = job.id === selectedJobId;
-                  const stat = getStatusColor(job.status);
+                  const stat = getJobStatusStyle(job.status);
                   const isActLoad = actionLoading === `publish-${job.id}` || actionLoading === `close-${job.id}`;
 
                   return (
@@ -370,7 +287,7 @@ export default function EmployerDashboard() {
                   ) : applications.length === 0 ? (
                     <Paper variant="outlined" sx={{ p: 6, textAlign: 'center', borderRadius: 4 }}>
                       <Typography variant="subtitle1" fontWeight={700} color="text.secondary">
-                        Ще немає жодного відгуку кандидаті.
+                        Ще немає жодного відгуку від кандидатів.
                       </Typography>
                     </Paper>
                   ) : (
@@ -379,6 +296,7 @@ export default function EmployerDashboard() {
                         const doctor = app.doctor || {};
                         const profile = doctor.doctorProfile || {};
                         const isActLoad = actionLoading === `app-${app.id}`;
+                        const appStyle = getAppStatusStyle(app.status);
 
                         return (
                           <Card key={app.id} variant="outlined" sx={{ borderRadius: 3, overflow: 'visible' }}>
@@ -402,8 +320,8 @@ export default function EmployerDashboard() {
                                 </Grid>
                                 <Grid item xs={12} sm={4} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', sm: 'flex-end' }, alignItems: 'center' }}>
                                   <Chip
-                                    label={getAppStatusLabel(app.status)}
-                                    color={getAppStatusColor(app.status) as any}
+                                    label={appStyle.label}
+                                    color={appStyle.color as any}
                                     size="small"
                                     sx={{ fontWeight: 750 }}
                                   />
@@ -499,5 +417,13 @@ export default function EmployerDashboard() {
         )}
       </Container>
     </>
+  );
+}
+
+export default function EmployerDashboard() {
+  return (
+    <RoleGuard allowedRole="EMPLOYER">
+      <EmployerDashboardContent />
+    </RoleGuard>
   );
 }

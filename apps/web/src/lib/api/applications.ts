@@ -41,6 +41,16 @@ const MY_APPLICATIONS_QUERY = gql`
   }
 `;
 
+const MY_APPLICATION_STATUS_QUERY = gql`
+  query MyApplications {
+    myApplications {
+      id
+      jobId
+      status
+    }
+  }
+`;
+
 const JOB_APPLICATIONS_QUERY = gql`
   query JobApplications($jobId: ID!) {
     jobApplications(jobId: $jobId) {
@@ -101,4 +111,16 @@ export async function fetchJobApplications(jobId: string): Promise<any[]> {
     jobId,
   });
   return data.jobApplications;
+}
+
+export async function checkMyApplicationStatus(jobId: string): Promise<{ hasApplied: boolean; applicationId?: string; status?: string }> {
+  try {
+    const data = await gqlClient.request<{ myApplications: { id: string; jobId: string; status: string }[] }>(MY_APPLICATION_STATUS_QUERY);
+    const match = data.myApplications.find((a) => a.jobId === jobId && a.status !== 'WITHDRAWN');
+    return match
+      ? { hasApplied: true, applicationId: match.id, status: match.status }
+      : { hasApplied: false };
+  } catch {
+    return { hasApplied: false };
+  }
 }
