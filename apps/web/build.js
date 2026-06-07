@@ -8,7 +8,8 @@ const distDir = path.resolve(projectRoot, '../../dist/apps/web');
 console.log('Building Next.js application...');
 try {
   const cleanEnv = {
-    ...process.env
+    ...process.env,
+    NODE_ENV: 'production'
   };
   // Run Next.js build
   execSync('npx next build', {
